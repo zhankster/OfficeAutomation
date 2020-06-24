@@ -1,0 +1,87 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="OfficeAutomation.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="CIPS" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Data Source=192.168.2.6;Initial Catalog=CIPS;Integrated Security=true</Value>
+    </Setting>
+    <Setting Name="RxBackend" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Data Source=192.168.2.6;Initial Catalog=RxBackend;Integrated Security=true</Value>
+    </Setting>
+    <Setting Name="FAC_COLUMN" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="EmailAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)">operations@ihspharmacy.com</Value>
+    </Setting>
+    <Setting Name="EmailPassword" Type="System.String" Scope="User">
+      <Value Profile="(Default)">PFnCH5WMt+nIMrCEObfhVA==</Value>
+    </Setting>
+    <Setting Name="EmailServer" Type="System.String" Scope="User">
+      <Value Profile="(Default)">outlook.office365.com</Value>
+    </Setting>
+    <Setting Name="Mailbox" Type="System.String" Scope="User">
+      <Value Profile="(Default)">IHS</Value>
+    </Setting>
+    <Setting Name="DSN_CIPS" Type="System.String" Scope="User">
+      <Value Profile="(Default)">cips9</Value>
+    </Setting>
+    <Setting Name="DSN_RxBackend" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Rx</Value>
+    </Setting>
+    <Setting Name="EmailPort" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">587</Value>
+    </Setting>
+    <Setting Name="FaxPrinter" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ActiveFax</Value>
+    </Setting>
+    <Setting Name="CalendarID" Type="System.String" Scope="User">
+      <Value Profile="(Default)">q9fs2m6fm2iekpie72f5ufdvf0@group.calendar.google.com</Value>
+    </Setting>
+    <Setting Name="FaxFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\\IHSADAF1\activerx\</Value>
+    </Setting>
+    <Setting Name="ForwardAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)">keilad@ihspharmacy.com</Value>
+    </Setting>
+    <Setting Name="BillingRptFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">D:\Dev\FLW\IHS\_Files\Reports\auto\</Value>
+    </Setting>
+    <Setting Name="BillingExports" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Notifications\Billing\</Value>
+    </Setting>
+    <Setting Name="download" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Files\download\</Value>
+    </Setting>
+    <Setting Name="process" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Files\process\</Value>
+    </Setting>
+    <Setting Name="renamed" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Files\renamed\</Value>
+    </Setting>
+    <Setting Name="fromCrop" Type="System.Drawing.Point" Scope="User">
+      <Value Profile="(Default)">1630, 570</Value>
+    </Setting>
+    <Setting Name="toCrop" Type="System.Drawing.Point" Scope="User">
+      <Value Profile="(Default)">1920, 640</Value>
+    </Setting>
+    <Setting Name="dpi" Type="System.String" Scope="User">
+      <Value Profile="(Default)">300</Value>
+    </Setting>
+    <Setting Name="python" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Program Files\Python38\</Value>
+    </Setting>
+    <Setting Name="NotifyExports" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Notifications\Exports\</Value>
+    </Setting>
+    <Setting Name="NotifyReport" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Notifications\Reports\FN.rpt</Value>
+    </Setting>
+    <Setting Name="AddressAttachment" Type="System.String" Scope="User">
+      <Value Profile="(Default)">zrefugee@gmail.com</Value>
+    </Setting>
+    <Setting Name="PasswordAttachment" Type="System.String" Scope="User">
+      <Value Profile="(Default)">OuadmfoyL8VvCpWcxbgZ9w==</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
