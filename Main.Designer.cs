@@ -115,6 +115,9 @@ namespace OfficeAutomation
             this.txtProcessFolder = new System.Windows.Forms.TextBox();
             this.txtDownloadFolder = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.btnWS_ID = new System.Windows.Forms.Button();
+            this.label43 = new System.Windows.Forms.Label();
+            this.txtWS_ID = new System.Windows.Forms.TextBox();
             this.btnCalendarID = new System.Windows.Forms.Button();
             this.label22 = new System.Windows.Forms.Label();
             this.txtCalendarID = new System.Windows.Forms.TextBox();
@@ -122,6 +125,9 @@ namespace OfficeAutomation
             this.label26 = new System.Windows.Forms.Label();
             this.txtFaxPrinter = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.btnDSN_WS = new System.Windows.Forms.Button();
+            this.label42 = new System.Windows.Forms.Label();
+            this.txtDSN_WS = new System.Windows.Forms.TextBox();
             this.btnDSN_RxBackend = new System.Windows.Forms.Button();
             this.btnDSN_CIPS = new System.Windows.Forms.Button();
             this.label9 = new System.Windows.Forms.Label();
@@ -326,6 +332,7 @@ namespace OfficeAutomation
             this.btnTest.TabIndex = 1;
             this.btnTest.Text = "Text";
             this.btnTest.UseVisualStyleBackColor = true;
+            this.btnTest.Visible = false;
             this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
             // 
             // btnOpen
@@ -1095,6 +1102,9 @@ namespace OfficeAutomation
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.btnWS_ID);
+            this.groupBox4.Controls.Add(this.label43);
+            this.groupBox4.Controls.Add(this.txtWS_ID);
             this.groupBox4.Controls.Add(this.btnCalendarID);
             this.groupBox4.Controls.Add(this.label22);
             this.groupBox4.Controls.Add(this.txtCalendarID);
@@ -1103,10 +1113,38 @@ namespace OfficeAutomation
             this.groupBox4.Controls.Add(this.txtFaxPrinter);
             this.groupBox4.Location = new System.Drawing.Point(464, 222);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(340, 97);
+            this.groupBox4.Size = new System.Drawing.Size(340, 133);
             this.groupBox4.TabIndex = 5;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Misc";
+            // 
+            // btnWS_ID
+            // 
+            this.btnWS_ID.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnWS_ID.Location = new System.Drawing.Point(150, 93);
+            this.btnWS_ID.Name = "btnWS_ID";
+            this.btnWS_ID.Size = new System.Drawing.Size(38, 22);
+            this.btnWS_ID.TabIndex = 25;
+            this.btnWS_ID.Text = ">>>";
+            this.btnWS_ID.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.btnWS_ID.UseVisualStyleBackColor = true;
+            this.btnWS_ID.Click += new System.EventHandler(this.btnTextBox_Click);
+            // 
+            // label43
+            // 
+            this.label43.AutoSize = true;
+            this.label43.Location = new System.Drawing.Point(5, 97);
+            this.label43.Name = "label43";
+            this.label43.Size = new System.Drawing.Size(71, 13);
+            this.label43.TabIndex = 24;
+            this.label43.Text = "Wholesale ID";
+            // 
+            // txtWS_ID
+            // 
+            this.txtWS_ID.Location = new System.Drawing.Point(77, 94);
+            this.txtWS_ID.Name = "txtWS_ID";
+            this.txtWS_ID.Size = new System.Drawing.Size(67, 20);
+            this.txtWS_ID.TabIndex = 23;
             // 
             // btnCalendarID
             // 
@@ -1123,7 +1161,7 @@ namespace OfficeAutomation
             // label22
             // 
             this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(14, 63);
+            this.label22.Location = new System.Drawing.Point(14, 60);
             this.label22.Name = "label22";
             this.label22.Size = new System.Drawing.Size(63, 13);
             this.label22.TabIndex = 4;
@@ -1166,6 +1204,9 @@ namespace OfficeAutomation
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.btnDSN_WS);
+            this.groupBox3.Controls.Add(this.label42);
+            this.groupBox3.Controls.Add(this.txtDSN_WS);
             this.groupBox3.Controls.Add(this.btnDSN_RxBackend);
             this.groupBox3.Controls.Add(this.btnDSN_CIPS);
             this.groupBox3.Controls.Add(this.label9);
@@ -1185,10 +1226,38 @@ namespace OfficeAutomation
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Database Connections";
             // 
+            // btnDSN_WS
+            // 
+            this.btnDSN_WS.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnDSN_WS.Location = new System.Drawing.Point(376, 111);
+            this.btnDSN_WS.Name = "btnDSN_WS";
+            this.btnDSN_WS.Size = new System.Drawing.Size(38, 22);
+            this.btnDSN_WS.TabIndex = 22;
+            this.btnDSN_WS.Text = ">>>";
+            this.btnDSN_WS.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.btnDSN_WS.UseVisualStyleBackColor = true;
+            this.btnDSN_WS.Click += new System.EventHandler(this.btnTextBox_Click);
+            // 
+            // label42
+            // 
+            this.label42.AutoSize = true;
+            this.label42.Location = new System.Drawing.Point(242, 115);
+            this.label42.Name = "label42";
+            this.label42.Size = new System.Drawing.Size(57, 13);
+            this.label42.TabIndex = 21;
+            this.label42.Text = "Wholesale";
+            // 
+            // txtDSN_WS
+            // 
+            this.txtDSN_WS.Location = new System.Drawing.Point(303, 112);
+            this.txtDSN_WS.Name = "txtDSN_WS";
+            this.txtDSN_WS.Size = new System.Drawing.Size(67, 20);
+            this.txtDSN_WS.TabIndex = 20;
+            // 
             // btnDSN_RxBackend
             // 
             this.btnDSN_RxBackend.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnDSN_RxBackend.Location = new System.Drawing.Point(311, 145);
+            this.btnDSN_RxBackend.Location = new System.Drawing.Point(178, 146);
             this.btnDSN_RxBackend.Name = "btnDSN_RxBackend";
             this.btnDSN_RxBackend.Size = new System.Drawing.Size(38, 22);
             this.btnDSN_RxBackend.TabIndex = 16;
@@ -1200,7 +1269,7 @@ namespace OfficeAutomation
             // btnDSN_CIPS
             // 
             this.btnDSN_CIPS.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnDSN_CIPS.Location = new System.Drawing.Point(311, 105);
+            this.btnDSN_CIPS.Location = new System.Drawing.Point(178, 110);
             this.btnDSN_CIPS.Name = "btnDSN_CIPS";
             this.btnDSN_CIPS.Size = new System.Drawing.Size(38, 22);
             this.btnDSN_CIPS.TabIndex = 15;
@@ -1221,7 +1290,7 @@ namespace OfficeAutomation
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(14, 111);
+            this.label10.Location = new System.Drawing.Point(14, 115);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(63, 13);
             this.label10.TabIndex = 12;
@@ -1229,16 +1298,16 @@ namespace OfficeAutomation
             // 
             // txtDSN_RxBackend
             // 
-            this.txtDSN_RxBackend.Location = new System.Drawing.Point(125, 144);
+            this.txtDSN_RxBackend.Location = new System.Drawing.Point(114, 147);
             this.txtDSN_RxBackend.Name = "txtDSN_RxBackend";
-            this.txtDSN_RxBackend.Size = new System.Drawing.Size(168, 20);
+            this.txtDSN_RxBackend.Size = new System.Drawing.Size(58, 20);
             this.txtDSN_RxBackend.TabIndex = 13;
             // 
             // txtDSN_CIPS
             // 
-            this.txtDSN_CIPS.Location = new System.Drawing.Point(125, 108);
+            this.txtDSN_CIPS.Location = new System.Drawing.Point(114, 111);
             this.txtDSN_CIPS.Name = "txtDSN_CIPS";
-            this.txtDSN_CIPS.Size = new System.Drawing.Size(168, 20);
+            this.txtDSN_CIPS.Size = new System.Drawing.Size(58, 20);
             this.txtDSN_CIPS.TabIndex = 11;
             // 
             // btnRxBackend
@@ -2073,6 +2142,12 @@ namespace OfficeAutomation
         private System.Windows.Forms.Button btnSendSelected;
         private System.Windows.Forms.Label lbSent;
         private System.Windows.Forms.Button btnRefreshSent;
+        private System.Windows.Forms.Button btnDSN_WS;
+        private System.Windows.Forms.Label label42;
+        private System.Windows.Forms.TextBox txtDSN_WS;
+        private System.Windows.Forms.Button btnWS_ID;
+        private System.Windows.Forms.Label label43;
+        private System.Windows.Forms.TextBox txtWS_ID;
     }
 }
 

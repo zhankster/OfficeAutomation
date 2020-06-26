@@ -83,5 +83,11 @@
     <Setting Name="PasswordAttachment" Type="System.String" Scope="User">
       <Value Profile="(Default)">OuadmfoyL8VvCpWcxbgZ9w==</Value>
     </Setting>
+    <Setting Name="DSN_WS" Type="System.String" Scope="User">
+      <Value Profile="(Default)">CIPS_WS</Value>
+    </Setting>
+    <Setting Name="WS_ID" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ZWS</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -346,5 +346,29 @@ namespace OfficeAutomation.Properties {
                 this["PasswordAttachment"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("CIPS_WS")]
+        public string DSN_WS {
+            get {
+                return ((string)(this["DSN_WS"]));
+            }
+            set {
+                this["DSN_WS"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("ZWS")]
+        public string WS_ID {
+            get {
+                return ((string)(this["WS_ID"]));
+            }
+            set {
+                this["WS_ID"] = value;
+            }
+        }
     }
 }

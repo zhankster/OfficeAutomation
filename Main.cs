@@ -780,6 +780,8 @@ namespace OfficeAutomation
                 txtMailbox.Text = ReadConfig("Mailbox");
                 txtEmailServer.Text = ReadConfig("EmailServer");
                 txtDSN_CIPS.Text = ReadConfig("DSN_CIPS");
+                txtDSN_WS.Text = ReadConfig("DSN_WS");
+                txtWS_ID.Text = ReadConfig("WS_ID");
                 txtDSN_RxBackend.Text = ReadConfig("DSN_RxBackend");
                 txtEmailPort.Text = ReadConfig("EmailPort");
                 txtFaxPrinter.Text = ReadConfig("FaxPrinter");
@@ -1674,6 +1676,12 @@ namespace OfficeAutomation
                     case "btnDSN_CIPS":
                         UpdateSettings("DSN_CIPS", txtDSN_CIPS.Text, "CIPS DSN changed from ", true);
                         break;
+                    case "btnDSN_WS":
+                        UpdateSettings("DSN_WS", txtDSN_WS.Text, "CIPS Wholesale DSN changed from ", true);
+                        break;
+                    case "btnWS_ID":
+                        UpdateSettings("WS_ID", txtWS_ID.Text, "CIPS Wholesale identifier changed from ", true);
+                        break;
                     case "btnDSN_RxBackend":
                         UpdateSettings("DSN_RxBackend", txtDSN_RxBackend.Text, "RxBackend DSN changed from ", true);
                         break;
@@ -1866,7 +1874,8 @@ namespace OfficeAutomation
         {
             txtReportIssues.Text = "";
             var folder = prop.BillingRptFolder;
-            var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
+            //var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
+            var report_date = dpBilling.Value.ToString("yyyy-MM");
             if (txtAltRptFolder.Text.Trim() != "")
             {
                 folder = txtAltRptFolder.Text;
@@ -1879,7 +1888,9 @@ namespace OfficeAutomation
                 string contents = file.ToString();
                 Utility.WriteActivity(contents);
 
-                string[] rpt = { "-S", txtDSN_CIPS.Text,
+                string dsn = file.ToString().Contains(txtWS_ID.Text.Trim()) ? txtDSN_WS.Text : txtDSN_CIPS.Text;
+
+                string[] rpt = { "-S", dsn,
                 "-F", file,
                 "-O", txtBillingExports.Text + report_date + "_" + Path.GetFileNameWithoutExtension(file) + ".pdf",
                 "-E", "pdf"};
