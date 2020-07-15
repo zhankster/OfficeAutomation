@@ -65,7 +65,7 @@
     <Setting Name="toCrop" Type="System.Drawing.Point" Scope="User">
       <Value Profile="(Default)">1920, 640</Value>
     </Setting>
-    <Setting Name="dpi" Type="System.String" Scope="User">
+    <Setting Name="dpi" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">300</Value>
     </Setting>
     <Setting Name="python" Type="System.String" Scope="User">

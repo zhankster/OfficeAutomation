@@ -278,9 +278,9 @@ namespace OfficeAutomation.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("300")]
-        public string dpi {
+        public int dpi {
             get {
-                return ((string)(this["dpi"]));
+                return ((int)(this["dpi"]));
             }
             set {
                 this["dpi"] = value;

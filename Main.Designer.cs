@@ -43,6 +43,18 @@ namespace OfficeAutomation
             this.btnTest = new System.Windows.Forms.Button();
             this.btnOpen = new System.Windows.Forms.Button();
             this.txtInfo = new System.Windows.Forms.TextBox();
+            this.tpAttach = new System.Windows.Forms.TabPage();
+            this.label45 = new System.Windows.Forms.Label();
+            this.chkDate = new System.Windows.Forms.CheckBox();
+            this.dptDownload = new System.Windows.Forms.DateTimePicker();
+            this.txtCheck = new System.Windows.Forms.TextBox();
+            this.btnCheck = new System.Windows.Forms.Button();
+            this.pbCheck = new System.Windows.Forms.PictureBox();
+            this.btnSingleFile = new System.Windows.Forms.Button();
+            this.txtAttOut = new System.Windows.Forms.TextBox();
+            this.btnDownload = new System.Windows.Forms.Button();
+            this.btnProcess = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.tpBilling = new System.Windows.Forms.TabPage();
             this.btnRefreshSent = new System.Windows.Forms.Button();
             this.lbSent = new System.Windows.Forms.Label();
@@ -69,18 +81,8 @@ namespace OfficeAutomation
             this.btnAltRptFolder = new System.Windows.Forms.Button();
             this.txtAltRptFolder = new System.Windows.Forms.TextBox();
             this.btnExportReports = new System.Windows.Forms.Button();
-            this.tpAttach = new System.Windows.Forms.TabPage();
-            this.chkDate = new System.Windows.Forms.CheckBox();
-            this.dptDownload = new System.Windows.Forms.DateTimePicker();
-            this.txtCheck = new System.Windows.Forms.TextBox();
-            this.btnCheck = new System.Windows.Forms.Button();
-            this.pbCheck = new System.Windows.Forms.PictureBox();
-            this.btnSingleFile = new System.Windows.Forms.Button();
-            this.txtAttOut = new System.Windows.Forms.TextBox();
-            this.btnDownload = new System.Windows.Forms.Button();
-            this.btnProcess = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
             this.tpSettings = new System.Windows.Forms.TabPage();
+            this.btnUserGuide = new System.Windows.Forms.Button();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.btnPasswordAttachment = new System.Windows.Forms.Button();
             this.btnAddressAttachment = new System.Windows.Forms.Button();
@@ -173,6 +175,7 @@ namespace OfficeAutomation
             this.txtNotifyExports = new System.Windows.Forms.TextBox();
             this.txtNotifyReport = new System.Windows.Forms.TextBox();
             this.tpEmail = new System.Windows.Forms.TabPage();
+            this.btnRefreshFacSettings = new System.Windows.Forms.Button();
             this.lbUpdate = new System.Windows.Forms.Label();
             this.cbFacNotify = new System.Windows.Forms.ComboBox();
             this.label20 = new System.Windows.Forms.Label();
@@ -199,11 +202,11 @@ namespace OfficeAutomation
             this.tabControl1.SuspendLayout();
             this.tpFac.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvNotiifications)).BeginInit();
+            this.tpAttach.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCheck)).BeginInit();
             this.tpBilling.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvBillingSent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvStaged)).BeginInit();
-            this.tpAttach.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbCheck)).BeginInit();
             this.tpSettings.SuspendLayout();
             this.groupBox7.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -222,11 +225,11 @@ namespace OfficeAutomation
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.tpFac);
-            this.tabControl1.Controls.Add(this.tpBilling);
             this.tabControl1.Controls.Add(this.tpAttach);
+            this.tabControl1.Controls.Add(this.tpBilling);
             this.tabControl1.Controls.Add(this.tpSettings);
             this.tabControl1.Controls.Add(this.tpEmail);
-            this.tabControl1.Location = new System.Drawing.Point(2, 2);
+            this.tabControl1.Location = new System.Drawing.Point(2, 1);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(1183, 480);
@@ -354,6 +357,133 @@ namespace OfficeAutomation
             this.txtInfo.Name = "txtInfo";
             this.txtInfo.Size = new System.Drawing.Size(329, 342);
             this.txtInfo.TabIndex = 2;
+            // 
+            // tpAttach
+            // 
+            this.tpAttach.Controls.Add(this.label45);
+            this.tpAttach.Controls.Add(this.chkDate);
+            this.tpAttach.Controls.Add(this.dptDownload);
+            this.tpAttach.Controls.Add(this.txtCheck);
+            this.tpAttach.Controls.Add(this.btnCheck);
+            this.tpAttach.Controls.Add(this.pbCheck);
+            this.tpAttach.Controls.Add(this.btnSingleFile);
+            this.tpAttach.Controls.Add(this.txtAttOut);
+            this.tpAttach.Controls.Add(this.btnDownload);
+            this.tpAttach.Controls.Add(this.btnProcess);
+            this.tpAttach.Controls.Add(this.button1);
+            this.tpAttach.Location = new System.Drawing.Point(4, 22);
+            this.tpAttach.Name = "tpAttach";
+            this.tpAttach.Size = new System.Drawing.Size(1175, 454);
+            this.tpAttach.TabIndex = 4;
+            this.tpAttach.Text = "Attachment Processing";
+            this.tpAttach.UseVisualStyleBackColor = true;
+            // 
+            // label45
+            // 
+            this.label45.AutoSize = true;
+            this.label45.Location = new System.Drawing.Point(876, 33);
+            this.label45.Name = "label45";
+            this.label45.Size = new System.Drawing.Size(41, 13);
+            this.label45.TabIndex = 22;
+            this.label45.Text = "label45";
+            // 
+            // chkDate
+            // 
+            this.chkDate.AutoSize = true;
+            this.chkDate.Location = new System.Drawing.Point(109, 51);
+            this.chkDate.Name = "chkDate";
+            this.chkDate.Size = new System.Drawing.Size(128, 17);
+            this.chkDate.TabIndex = 20;
+            this.chkDate.Text = "Download On or After";
+            this.chkDate.UseVisualStyleBackColor = true;
+            this.chkDate.CheckedChanged += new System.EventHandler(this.chkDate_CheckedChanged);
+            // 
+            // dptDownload
+            // 
+            this.dptDownload.Enabled = false;
+            this.dptDownload.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dptDownload.Location = new System.Drawing.Point(109, 23);
+            this.dptDownload.Name = "dptDownload";
+            this.dptDownload.Size = new System.Drawing.Size(99, 20);
+            this.dptDownload.TabIndex = 19;
+            // 
+            // txtCheck
+            // 
+            this.txtCheck.Location = new System.Drawing.Point(275, 56);
+            this.txtCheck.Name = "txtCheck";
+            this.txtCheck.ReadOnly = true;
+            this.txtCheck.Size = new System.Drawing.Size(289, 20);
+            this.txtCheck.TabIndex = 18;
+            // 
+            // btnCheck
+            // 
+            this.btnCheck.Location = new System.Drawing.Point(275, 20);
+            this.btnCheck.Name = "btnCheck";
+            this.btnCheck.Size = new System.Drawing.Size(104, 23);
+            this.btnCheck.TabIndex = 17;
+            this.btnCheck.Text = "Check Document";
+            this.btnCheck.UseVisualStyleBackColor = true;
+            this.btnCheck.Click += new System.EventHandler(this.btnCheck_Click);
+            // 
+            // pbCheck
+            // 
+            this.pbCheck.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.pbCheck.Location = new System.Drawing.Point(275, 87);
+            this.pbCheck.Name = "pbCheck";
+            this.pbCheck.Size = new System.Drawing.Size(289, 137);
+            this.pbCheck.TabIndex = 16;
+            this.pbCheck.TabStop = false;
+            // 
+            // btnSingleFile
+            // 
+            this.btnSingleFile.Location = new System.Drawing.Point(18, 124);
+            this.btnSingleFile.Name = "btnSingleFile";
+            this.btnSingleFile.Size = new System.Drawing.Size(75, 23);
+            this.btnSingleFile.TabIndex = 15;
+            this.btnSingleFile.Text = "Single File";
+            this.btnSingleFile.UseVisualStyleBackColor = true;
+            this.btnSingleFile.Visible = false;
+            this.btnSingleFile.Click += new System.EventHandler(this.btnSingleFile_Click);
+            // 
+            // txtAttOut
+            // 
+            this.txtAttOut.Location = new System.Drawing.Point(275, 242);
+            this.txtAttOut.Multiline = true;
+            this.txtAttOut.Name = "txtAttOut";
+            this.txtAttOut.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.txtAttOut.Size = new System.Drawing.Size(289, 85);
+            this.txtAttOut.TabIndex = 14;
+            this.txtAttOut.Visible = false;
+            // 
+            // btnDownload
+            // 
+            this.btnDownload.Location = new System.Drawing.Point(18, 23);
+            this.btnDownload.Name = "btnDownload";
+            this.btnDownload.Size = new System.Drawing.Size(75, 23);
+            this.btnDownload.TabIndex = 13;
+            this.btnDownload.Text = "Download";
+            this.btnDownload.UseVisualStyleBackColor = true;
+            this.btnDownload.Click += new System.EventHandler(this.btnDownload_Click);
+            // 
+            // btnProcess
+            // 
+            this.btnProcess.Location = new System.Drawing.Point(18, 72);
+            this.btnProcess.Name = "btnProcess";
+            this.btnProcess.Size = new System.Drawing.Size(75, 23);
+            this.btnProcess.TabIndex = 12;
+            this.btnProcess.Text = "Process";
+            this.btnProcess.UseVisualStyleBackColor = true;
+            this.btnProcess.Click += new System.EventHandler(this.btnProcess_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(613, 8);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 11;
+            this.button1.Text = "Test";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Visible = false;
             // 
             // tpBilling
             // 
@@ -574,6 +704,8 @@ namespace OfficeAutomation
             this.gvStaged.Size = new System.Drawing.Size(776, 140);
             this.gvStaged.TabIndex = 27;
             this.gvStaged.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gvStaged_CellClick);
+            this.gvStaged.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gvStaged_CellDoubleClick);
+            this.gvStaged.RowHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.gvStaged_RowHeaderMouseClick);
             this.gvStaged.RowHeaderMouseDoubleClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.gvStaged_RowHeaderMouseDoubleClick);
             // 
             // label25
@@ -632,125 +764,9 @@ namespace OfficeAutomation
             this.btnExportReports.UseVisualStyleBackColor = true;
             this.btnExportReports.Click += new System.EventHandler(this.btnExportReports_Click);
             // 
-            // tpAttach
-            // 
-            this.tpAttach.Controls.Add(this.chkDate);
-            this.tpAttach.Controls.Add(this.dptDownload);
-            this.tpAttach.Controls.Add(this.txtCheck);
-            this.tpAttach.Controls.Add(this.btnCheck);
-            this.tpAttach.Controls.Add(this.pbCheck);
-            this.tpAttach.Controls.Add(this.btnSingleFile);
-            this.tpAttach.Controls.Add(this.txtAttOut);
-            this.tpAttach.Controls.Add(this.btnDownload);
-            this.tpAttach.Controls.Add(this.btnProcess);
-            this.tpAttach.Controls.Add(this.button1);
-            this.tpAttach.Location = new System.Drawing.Point(4, 22);
-            this.tpAttach.Name = "tpAttach";
-            this.tpAttach.Size = new System.Drawing.Size(1175, 454);
-            this.tpAttach.TabIndex = 4;
-            this.tpAttach.Text = "Attachment Processing";
-            this.tpAttach.UseVisualStyleBackColor = true;
-            // 
-            // chkDate
-            // 
-            this.chkDate.AutoSize = true;
-            this.chkDate.Location = new System.Drawing.Point(109, 51);
-            this.chkDate.Name = "chkDate";
-            this.chkDate.Size = new System.Drawing.Size(128, 17);
-            this.chkDate.TabIndex = 20;
-            this.chkDate.Text = "Download On or After";
-            this.chkDate.UseVisualStyleBackColor = true;
-            this.chkDate.CheckedChanged += new System.EventHandler(this.chkDate_CheckedChanged);
-            // 
-            // dptDownload
-            // 
-            this.dptDownload.Enabled = false;
-            this.dptDownload.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dptDownload.Location = new System.Drawing.Point(109, 23);
-            this.dptDownload.Name = "dptDownload";
-            this.dptDownload.Size = new System.Drawing.Size(99, 20);
-            this.dptDownload.TabIndex = 19;
-            // 
-            // txtCheck
-            // 
-            this.txtCheck.Location = new System.Drawing.Point(275, 56);
-            this.txtCheck.Name = "txtCheck";
-            this.txtCheck.ReadOnly = true;
-            this.txtCheck.Size = new System.Drawing.Size(289, 20);
-            this.txtCheck.TabIndex = 18;
-            // 
-            // btnCheck
-            // 
-            this.btnCheck.Location = new System.Drawing.Point(275, 20);
-            this.btnCheck.Name = "btnCheck";
-            this.btnCheck.Size = new System.Drawing.Size(104, 23);
-            this.btnCheck.TabIndex = 17;
-            this.btnCheck.Text = "Check Document";
-            this.btnCheck.UseVisualStyleBackColor = true;
-            this.btnCheck.Click += new System.EventHandler(this.btnCheck_Click);
-            // 
-            // pbCheck
-            // 
-            this.pbCheck.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.pbCheck.Location = new System.Drawing.Point(275, 87);
-            this.pbCheck.Name = "pbCheck";
-            this.pbCheck.Size = new System.Drawing.Size(289, 137);
-            this.pbCheck.TabIndex = 16;
-            this.pbCheck.TabStop = false;
-            // 
-            // btnSingleFile
-            // 
-            this.btnSingleFile.Location = new System.Drawing.Point(18, 124);
-            this.btnSingleFile.Name = "btnSingleFile";
-            this.btnSingleFile.Size = new System.Drawing.Size(75, 23);
-            this.btnSingleFile.TabIndex = 15;
-            this.btnSingleFile.Text = "Single File";
-            this.btnSingleFile.UseVisualStyleBackColor = true;
-            this.btnSingleFile.Visible = false;
-            this.btnSingleFile.Click += new System.EventHandler(this.btnSingleFile_Click);
-            // 
-            // txtAttOut
-            // 
-            this.txtAttOut.Location = new System.Drawing.Point(275, 242);
-            this.txtAttOut.Multiline = true;
-            this.txtAttOut.Name = "txtAttOut";
-            this.txtAttOut.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtAttOut.Size = new System.Drawing.Size(289, 85);
-            this.txtAttOut.TabIndex = 14;
-            this.txtAttOut.Visible = false;
-            // 
-            // btnDownload
-            // 
-            this.btnDownload.Location = new System.Drawing.Point(18, 23);
-            this.btnDownload.Name = "btnDownload";
-            this.btnDownload.Size = new System.Drawing.Size(75, 23);
-            this.btnDownload.TabIndex = 13;
-            this.btnDownload.Text = "Download";
-            this.btnDownload.UseVisualStyleBackColor = true;
-            this.btnDownload.Click += new System.EventHandler(this.btnDownload_Click);
-            // 
-            // btnProcess
-            // 
-            this.btnProcess.Location = new System.Drawing.Point(18, 72);
-            this.btnProcess.Name = "btnProcess";
-            this.btnProcess.Size = new System.Drawing.Size(75, 23);
-            this.btnProcess.TabIndex = 12;
-            this.btnProcess.Text = "Process";
-            this.btnProcess.UseVisualStyleBackColor = true;
-            this.btnProcess.Click += new System.EventHandler(this.btnProcess_Click);
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(613, 8);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 11;
-            this.button1.Text = "Test";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Visible = false;
-            // 
             // tpSettings
             // 
+            this.tpSettings.Controls.Add(this.btnUserGuide);
             this.tpSettings.Controls.Add(this.groupBox7);
             this.tpSettings.Controls.Add(this.groupBox6);
             this.tpSettings.Controls.Add(this.groupBox5);
@@ -764,6 +780,16 @@ namespace OfficeAutomation
             this.tpSettings.TabIndex = 2;
             this.tpSettings.Text = "Settings";
             this.tpSettings.UseVisualStyleBackColor = true;
+            // 
+            // btnUserGuide
+            // 
+            this.btnUserGuide.Location = new System.Drawing.Point(16, 420);
+            this.btnUserGuide.Name = "btnUserGuide";
+            this.btnUserGuide.Size = new System.Drawing.Size(75, 23);
+            this.btnUserGuide.TabIndex = 10;
+            this.btnUserGuide.Text = "User Guide";
+            this.btnUserGuide.UseVisualStyleBackColor = true;
+            this.btnUserGuide.Click += new System.EventHandler(this.btnUserGuide_Click);
             // 
             // groupBox7
             // 
@@ -905,6 +931,7 @@ namespace OfficeAutomation
             this.btnDpi.Text = ">>>";
             this.btnDpi.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.btnDpi.UseVisualStyleBackColor = true;
+            this.btnDpi.Click += new System.EventHandler(this.btnFrom_Click);
             // 
             // txtDpi
             // 
@@ -923,6 +950,7 @@ namespace OfficeAutomation
             this.btnTo.Text = ">>>";
             this.btnTo.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.btnTo.UseVisualStyleBackColor = true;
+            this.btnTo.Click += new System.EventHandler(this.btnFrom_Click);
             // 
             // btnFrom
             // 
@@ -934,6 +962,7 @@ namespace OfficeAutomation
             this.btnFrom.Text = ">>>";
             this.btnFrom.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.btnFrom.UseVisualStyleBackColor = true;
+            this.btnFrom.Click += new System.EventHandler(this.btnFrom_Click);
             // 
             // txtTo
             // 
@@ -1697,6 +1726,7 @@ namespace OfficeAutomation
             // 
             // tpEmail
             // 
+            this.tpEmail.Controls.Add(this.btnRefreshFacSettings);
             this.tpEmail.Controls.Add(this.lbUpdate);
             this.tpEmail.Controls.Add(this.cbFacNotify);
             this.tpEmail.Controls.Add(this.label20);
@@ -1724,6 +1754,16 @@ namespace OfficeAutomation
             this.tpEmail.TabIndex = 1;
             this.tpEmail.Text = "Facility Maintenance";
             this.tpEmail.UseVisualStyleBackColor = true;
+            // 
+            // btnRefreshFacSettings
+            // 
+            this.btnRefreshFacSettings.Location = new System.Drawing.Point(6, 23);
+            this.btnRefreshFacSettings.Name = "btnRefreshFacSettings";
+            this.btnRefreshFacSettings.Size = new System.Drawing.Size(53, 23);
+            this.btnRefreshFacSettings.TabIndex = 21;
+            this.btnRefreshFacSettings.Text = "Refresh";
+            this.btnRefreshFacSettings.UseVisualStyleBackColor = true;
+            this.btnRefreshFacSettings.Click += new System.EventHandler(this.btnRefreshFacSettings_Click);
             // 
             // lbUpdate
             // 
@@ -1760,9 +1800,9 @@ namespace OfficeAutomation
             // btnAddNew
             // 
             this.btnAddNew.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.btnAddNew.Location = new System.Drawing.Point(20, 22);
+            this.btnAddNew.Location = new System.Drawing.Point(82, 22);
             this.btnAddNew.Name = "btnAddNew";
-            this.btnAddNew.Size = new System.Drawing.Size(86, 23);
+            this.btnAddNew.Size = new System.Drawing.Size(69, 23);
             this.btnAddNew.TabIndex = 16;
             this.btnAddNew.Text = "Add New";
             this.btnAddNew.UseVisualStyleBackColor = true;
@@ -1949,13 +1989,13 @@ namespace OfficeAutomation
             this.tpFac.ResumeLayout(false);
             this.tpFac.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvNotiifications)).EndInit();
+            this.tpAttach.ResumeLayout(false);
+            this.tpAttach.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCheck)).EndInit();
             this.tpBilling.ResumeLayout(false);
             this.tpBilling.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvBillingSent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvStaged)).EndInit();
-            this.tpAttach.ResumeLayout(false);
-            this.tpAttach.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbCheck)).EndInit();
             this.tpSettings.ResumeLayout(false);
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
@@ -2148,6 +2188,9 @@ namespace OfficeAutomation
         private System.Windows.Forms.Button btnWS_ID;
         private System.Windows.Forms.Label label43;
         private System.Windows.Forms.TextBox txtWS_ID;
+        private System.Windows.Forms.Button btnRefreshFacSettings;
+        private System.Windows.Forms.Label label45;
+        private System.Windows.Forms.Button btnUserGuide;
     }
 }
 

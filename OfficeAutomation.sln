@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30104.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfficeAutomation", "OfficeAutomation.csproj", "{D1A60258-35CC-48D5-B874-248D68DD6C35}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "OfficeAutomationSetup", "OfficeAutomationSetup\OfficeAutomationSetup.vdproj", "{713761C9-20F9-438A-82CD-F1AF52AF86D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,9 @@ Global
 		{D1A60258-35CC-48D5-B874-248D68DD6C35}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1A60258-35CC-48D5-B874-248D68DD6C35}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1A60258-35CC-48D5-B874-248D68DD6C35}.Release|Any CPU.Build.0 = Release|Any CPU
+		{713761C9-20F9-438A-82CD-F1AF52AF86D8}.Debug|Any CPU.ActiveCfg = Debug
+		{713761C9-20F9-438A-82CD-F1AF52AF86D8}.Release|Any CPU.ActiveCfg = Release
+		{713761C9-20F9-438A-82CD-F1AF52AF86D8}.Release|Any CPU.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

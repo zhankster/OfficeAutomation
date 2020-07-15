@@ -43,7 +43,6 @@ namespace OfficeAutomation
             cbFacNotify.SelectedIndex = cbFacNotify.FindString("");
             dpBilling.Value = DateTime.Now.AddMonths(-1);
             tabControl1.TabPages.Remove(tpEmail);
-            LoadFacilities();
         }
 
         #region Global Vars
@@ -327,15 +326,21 @@ namespace OfficeAutomation
                     ,A.DCODE as Code
                     ,F.DNAME as Facility
                     ,ISNULL(
-                    STUFF((SELECT ';' + C.DCODE
-                        FROM
-                        CIPS.dbo.FAC FS 
-                        LEFT JOIN CIPS.dbo.FAC_CHG G 
-                        ON FS.ID = G.FAC_ID
-                        LEFT JOIN CIPS.dbo.CHG C
-                        ON G.CHG_ID = C.ID
-                        WHERE A.DCODE = FS.DCODE
-                        FOR XML PATH('')), 1, 1, ''), '') [Accounts]
+			         STUFF((SELECT 
+						';' +
+						CASE WHEN C.DCODE IS NOT NULL THEN C.DCODE
+						WHEN H.DCODE IS NOT NULL THEN H.DCODE
+						END
+			        FROM
+			             CIPS.dbo.FAC FS 
+			             LEFT JOIN CIPS.dbo.FAC_CHG G 
+			             ON FS.ID = G.FAC_ID
+			             LEFT JOIN CIPS.dbo.CHG C
+			             ON G.CHG_ID = C.ID
+						LEFT JOIN CIPS.dbo.CHG H
+                        ON FS.CHG_ID = H.ID
+			             WHERE A.DCODE = FS.DCODE
+			             FOR XML PATH('')), 1, 1, ''), '') [Accounts]
                     ,ISNULL(
                     STUFF((SELECT ';' + ADDRESS
                     FROM
@@ -352,7 +357,7 @@ namespace OfficeAutomation
             sql += @"OUTER APPLY ( 
 	                SELECT TOP 1 NOTES FROM FAC_TRANS T 
 	                WHERE T.FAC_CODE = A.DCODE";
-            sql += " AND NOTES = '" + notes + "') O ORDER BY F.DNAME";
+            sql += " AND NOTES = '" + notes + "') O ORDER BY A.DCODE";
 
             try
             {
@@ -1286,8 +1291,7 @@ namespace OfficeAutomation
             {
                 ProcessStartInfo start = new ProcessStartInfo();
                 start.FileName = txtPythonFolder.Text + @"python.exe";
-                //start.Arguments = "r \"" + Application.StartupPath + "\\scripts\\ocr.py\" " + pth ;
-                start.Arguments = Application.StartupPath + @"\scripts\ocr.py " + pth;
+                start.Arguments = "\"" + Application.StartupPath + "\\scripts\\ocr.py\" " + "\"" + pth + "\"";
                 Utility.WriteActivity("SP: " + start.Arguments.ToString());
                 start.UseShellExecute = false;
                 start.WindowStyle = ProcessWindowStyle.Hidden;
@@ -1442,11 +1446,16 @@ namespace OfficeAutomation
 
                 if (acct != null && acct != facility.Trim())
                 {
-                    docs += doc + ";";
+                    if(acct.Trim() != "")
+                    {
+                        Utility.WriteActivity("Report Acct: " + identity + ": " + facility.Trim() + ": " + file.Name);
+                        docs += doc + ";";
+                    }
+
                 }
                 else if (identity.Trim() == facility.Trim())
                 {
-                    //Utility.WriteActivity("Report: " + identity + ": " + facility.Trim() + ": " + file.Name);
+                    Utility.WriteActivity("Report Fac: " + identity + ": " + facility.Trim() + ": " + file.Name);
                     docs += doc + ";";
                 }
             }
@@ -1491,45 +1500,62 @@ namespace OfficeAutomation
         #region Click Events
         private void btnOpen_Click(object sender, EventArgs e)
         {
-            string typ = cbImportType.GetItemText(cbImportType.SelectedItem);
-            //if (typ == "File")
-            //{
-            //    OpenFileDialog fd = new OpenFileDialog();
-            //    fd.Filter = "Excel Files | *.xlsx; *.xls";
-            //    Utility.WriteActivity("Open File Dialog");
-
-            //    if (fd.ShowDialog() == DialogResult.OK)
-            //    {
-            //        readExcelFile(fd.FileName);
-            //    }
-            //}
-            //else 
-            if (typ == "Remote")
+            try
             {
-                var current_date = DateTime.Now.ToString("MM-dd-yyyy");
-                var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
-                if (current_date == report_date)
+                string typ = cbImportType.GetItemText(cbImportType.SelectedItem);
+                //if (typ == "File")
+                //{
+                //    OpenFileDialog fd = new OpenFileDialog();
+                //    fd.Filter = "Excel Files | *.xlsx; *.xls";
+                //    Utility.WriteActivity("Open File Dialog");
+
+                //    if (fd.ShowDialog() == DialogResult.OK)
+                //    {
+                //        readExcelFile(fd.FileName);
+                //    }
+                //}
+                //else 
+                if (typ == "Remote")
                 {
-                    DialogResult result = MessageBox.Show("The select date is the same as the current date\nDo you want to use it?",
-                        "Use Current Date", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                    if (result == DialogResult.No)
+                    var current_date = DateTime.Now.ToString("MM-dd-yyyy");
+                    var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
+                    if (current_date == report_date)
                     {
-                        return;
+                        DialogResult result = MessageBox.Show("The select date is the same as the current date\nDo you want to use it?",
+                            "Use Current Date", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        if (result == DialogResult.No)
+                        {
+                            return;
+                        }
                     }
-                }
 
-                GetCalNotifications();
+                    GetCalNotifications();
+                }
+                else
+                {
+                    return;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return;
+                MessageBox.Show(ex.Message);
+                Utility.WriteActivity(ex.Message);
             }
         }
 
         private void btnFileExport_Click(object sender, EventArgs e)
         {
-            string[] parms = { "-A", "Facility:DJ", "-A", "DateAfter:05-01-2020" };
-            ExportReport(txtNotifyReport.Text, txtNotifyExports.Text, "pdf", parms, txtDSN_CIPS.Text);
+            try
+            {
+                string[] parms = { "-A", "Facility:DJ", "-A", "DateAfter:05-01-2020" };
+                ExportReport(txtNotifyReport.Text, txtNotifyExports.Text, "pdf", parms, txtDSN_CIPS.Text);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Utility.WriteActivity(ex.Message);
+                return;
+            }
         }
 
         private void btnRptFile_Click(object sender, EventArgs e)
@@ -1608,7 +1634,7 @@ namespace OfficeAutomation
                         Utility.WriteActivity("Notify Exports folder updated");
                         break;
                     case "btnBillingRptFolder":
-                        txtNotifyExports.Text = folder;
+                        txtBillingRptFolder.Text = folder;
                         WriteConfig("BillingRptFolder", folder);
                         Utility.WriteActivity("Billing Reports folder updated");
                         break;
@@ -1801,6 +1827,62 @@ namespace OfficeAutomation
 
         private void btnFacilityEmail_Click(object sender, EventArgs e)
         {
+            try
+            {
+                string code = "", typ = "", valid = "", fac_name = "", email = "";
+                var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
+                for (int i = 0; i + 1 < gvNotiifications.Rows.Count; i++)
+                {
+                    code = gvNotiifications.Rows[i].Cells[0].Value.ToString();
+                    typ = gvNotiifications.Rows[i].Cells[5].Value.ToString();
+                    valid = gvNotiifications.Rows[i].Cells[6].Value.ToString();
+                    fac_name = gvNotiifications.Rows[i].Cells[1].Value.ToString();
+                    email = gvNotiifications.Rows[i].Cells[2].Value.ToString();
+
+                    var att_file = report_date + "_" + code;
+                    var att_path = prop.NotifyExports + att_file + ".pdf";
+
+                    bool file_exists = File.Exists(att_path);
+                    bool sent = false;
+
+                    if (valid == "True" && (typ == "Email" || typ == "Both"))
+                    {
+                        if (file_exists)
+                        {
+                            //email = "dekalb.hda@gmail.com;hank@dekalbal.com;zrefugee@gmail.com";
+                            if (prop.ForwardAddress.ToString() != "")
+                            {
+                                email = email + prop.ForwardAddress.ToString();
+                            }
+                            string[] attachments = { att_path };
+                            Utility.WriteActivity(fac_name + ": " + email + ": " + att_path);
+                            sent = SendEmail("Your ARX Report from IHS Pharmacy is attached", "Your ARX Report is attached ", email, "operations@ihspharmacy.com", "IHS Pharmacy", attachments);
+
+                            if (sent)
+                            {
+                                LogActivity("FAC_EMAIL", 0, fac_name, report_date);
+                                gvNotiifications.Rows[i].DefaultCellStyle.BackColor = Color.Yellow;
+                                File.Delete(att_path);
+                            }
+
+                        }
+                        else
+                        {
+                            Utility.WriteActivity("The file for [" + fac_name + "] does not exist");
+                        }
+                    }
+
+
+                }
+                Utility.WriteActivity("Email transactions complete");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Utility.WriteActivity(ex.Message);
+                return;
+            }
+
             DialogResult result = MessageBox.Show("Do you want to send all the email notiifications displayed?",
                     "Send Email Notification", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (result == DialogResult.No)
@@ -1808,52 +1890,7 @@ namespace OfficeAutomation
                 return;
             }
 
-            string code = "", typ = "", valid = "", fac_name = "", email = "";
-            var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
-            for (int i = 0; i + 1 < gvNotiifications.Rows.Count; i++)
-            {
-                code = gvNotiifications.Rows[i].Cells[0].Value.ToString();
-                typ = gvNotiifications.Rows[i].Cells[5].Value.ToString();
-                valid = gvNotiifications.Rows[i].Cells[6].Value.ToString();
-                fac_name = gvNotiifications.Rows[i].Cells[1].Value.ToString();
-                email = gvNotiifications.Rows[i].Cells[2].Value.ToString();
 
-                var att_file = report_date + "_" + code;
-                var att_path = prop.NotifyExports + att_file + ".pdf";
-
-                bool file_exists = File.Exists(att_path);
-                bool sent = false;
-
-                if (valid == "True" && (typ == "Email" || typ == "Both"))
-                {
-                    if (file_exists)
-                    {
-                        //email = "dekalb.hda@gmail.com;hank@dekalbal.com;zrefugee@gmail.com";
-                        if (prop.ForwardAddress.ToString() != "")
-                        {
-                            email = email + prop.ForwardAddress.ToString();
-                        }
-                        string[] attachments = { att_path };
-                        Utility.WriteActivity(fac_name + ": " + email + ": " + att_path);
-                        sent = SendEmail("Your ARX Report from IHS Pharmacy is attached", "Your ARX Report is attached ", email, "operations@ihspharmacy.com", "IHS Pharmacy", attachments);
-
-                        if (sent)
-                        {
-                            LogActivity("FAC_EMAIL", 0, fac_name, report_date);
-                            gvNotiifications.Rows[i].DefaultCellStyle.BackColor = Color.Yellow;
-                            File.Delete(att_path);
-                        }
-
-                    }
-                    else
-                    {
-                        Utility.WriteActivity("The file for [" + fac_name + "] does not exist");
-                    }
-                }
-
-
-            }
-            Utility.WriteActivity("Email transactions complete");
         }
 
         private void btnFacilityFax_Click(object sender, EventArgs e)
@@ -1865,43 +1902,60 @@ namespace OfficeAutomation
                 return;
             }
 
-            //string[] parms = { "-A", "Facility:DJ", "-A", "DateAfter:05-01-2020" };
-            //FaxReports(txtNotifyReport.Text, txtNotifyExports.Text, "print", parms, txtDSN_CIPS.Text);
-            FaxExportToFolder();
+            try
+            {
+
+                FaxExportToFolder();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Utility.WriteActivity(ex.Message);
+                return;
+            }
+
         }
 
         private void btnExportReports_Click(object sender, EventArgs e)
         {
-            txtReportIssues.Text = "";
-            var folder = prop.BillingRptFolder;
-            //var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
-            var report_date = dpBilling.Value.ToString("yyyy-MM");
-            if (txtAltRptFolder.Text.Trim() != "")
+            try
             {
-                folder = txtAltRptFolder.Text;
-            }
+                txtReportIssues.Text = "";
+                var folder = prop.BillingRptFolder;
+                var report_date = dpBilling.Value.ToString("yyyy-MM");
+                if (txtAltRptFolder.Text.Trim() != "")
+                {
+                    folder = txtAltRptFolder.Text;
+                }
 
-            //ExportReport(txtNotifyReport.Text, txtNotifyExports.Text, "pdf", parms, txtDSN_CIPS.Text);
+                //ExportReport(txtNotifyReport.Text, txtNotifyExports.Text, "pdf", parms, txtDSN_CIPS.Text);
 
-            foreach (string file in Directory.EnumerateFiles(folder, "*.rpt"))
-            {
-                string contents = file.ToString();
-                Utility.WriteActivity(contents);
+                foreach (string file in Directory.EnumerateFiles(folder, "*.rpt"))
+                {
+                    string contents = file.ToString();
+                    Utility.WriteActivity(contents);
 
-                string dsn = file.ToString().Contains(txtWS_ID.Text.Trim()) ? txtDSN_WS.Text : txtDSN_CIPS.Text;
+                    string dsn = file.ToString().Contains(txtWS_ID.Text.Trim()) ? txtDSN_WS.Text : txtDSN_CIPS.Text;
 
-                string[] rpt = { "-S", dsn,
+                    string[] rpt = { "-S", dsn,
                 "-F", file,
                 "-O", txtBillingExports.Text + report_date + "_" + Path.GetFileNameWithoutExtension(file) + ".pdf",
                 "-E", "pdf"};
 
-                bool success = RunReport(rpt);
+                    bool success = RunReport(rpt);
 
-                if (!success)
-                {
-                    txtReportIssues.Text += file + "\r\n";
+                    if (!success)
+                    {
+                        txtReportIssues.Text += file + "\r\n";
+                    }
+
                 }
-
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Utility.WriteActivity(ex.Message);
+                return;
             }
 
         }
@@ -1909,8 +1963,17 @@ namespace OfficeAutomation
         //Attachment Processing
         private void btnDownload_Click(object sender, EventArgs e)
         {
-            var msg_ret = DownloadAttachments();
-            Utility.WriteActivity(msg_ret);
+            try
+            {
+                var msg_ret = DownloadAttachments();
+                Utility.WriteActivity(msg_ret);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Utility.WriteActivity(ex.Message);
+                return;
+            }
         }
     
         private void btnProcess_Click(object sender, EventArgs e)
@@ -2061,7 +2124,16 @@ namespace OfficeAutomation
 
         private void btnPreview_Click(object sender, EventArgs e)
         {
-            GetFacilityBIlling();
+            try
+            {
+                GetFacilityBIlling();
+                Utility.WriteActivity("Preview Loading Complete");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Utility.WriteActivity(ex.Message);
+            }
         }
 
         private void gvStaged_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -2104,7 +2176,7 @@ namespace OfficeAutomation
         {
             int row = e.RowIndex;
   
-            string email = gvStaged.Rows[row].Cells["Email"].Value.ToString();
+            string email = gvStaged.Rows[row].Cells["Email"].EditedFormattedValue.ToString();
             string docs = gvStaged.Rows[row].Cells["Documents"].Value.ToString();
             string code = gvStaged.Rows[row].Cells["Code"].Value.ToString();
             string send = gvStaged.Rows[row].Cells["Send"].Value.ToString();
@@ -2117,37 +2189,127 @@ namespace OfficeAutomation
                 return;
             }
 
-            if (send == "True" && email.Trim().Length > 2 && docs.Trim().Length > 2)
+            //if (send == "True" && email.Trim().Length > 2 && docs.Trim().Length > 2)
+            if (email.Trim().Length > 2 && docs.Trim().Length > 2)
             {
                 SendBillingDocs(code, docs, email);
             }
 
         }
 
+        private void gvStaged_RowHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            //int row = e.RowIndex;
+
+            //string docs = gvStaged.Rows[row].Cells["Documents"].Value.ToString();
+            //string accounts = gvStaged.Rows[row].Cells["Accounts"].EditedFormattedValue.ToString();
+            //string name = gvStaged.Rows[row].Cells["Facility"].Value.ToString();
+
+            //DialogResult result = MessageBox.Show("Do you want to add the accounts to\n" + name + "?",
+            //    "Add Accounts", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            //if (result == DialogResult.No)
+            //{
+            //    return;
+            //}
+            ////if (docs.Trim().Length > 0)
+            ////{
+            ////    accounts = ";" + accounts;
+            ////}
+
+            //gvStaged.Rows[row].Cells["Documents"].Value = docs + accounts + ".pdf";
+        }
+
+        private void gvStaged_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            int cell = gvStaged.CurrentCell.ColumnIndex;
+            int row = e.RowIndex;
+            string docs = "";
+            string name = "";
+            string val = "";
+            string[] vals;
+            if (e.RowIndex == -1) return; //check if row index is not selected
+            {
+                if (cell.Equals(3))
+                {                   
+                    val = gvStaged.CurrentCell.EditedFormattedValue.ToString() + ".pdf";
+                    vals = gvStaged.CurrentCell.EditedFormattedValue.ToString().Split(';');
+                    docs = gvStaged.Rows[row].Cells["Documents"].Value.ToString();
+                    name = gvStaged.Rows[row].Cells["Facility"].Value.ToString();
+
+                    if (vals.Length > 1)
+                    {
+                        val = "";
+                        for (int i = 0; i < vals.Length; i++)
+                        {
+                            if (i != vals.Length) 
+                            {
+                                val += vals[i] + ".pdf;";
+                            }
+                            else
+                            {
+                                val += vals[i] + ".pdf";
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    return;
+                }
+            }
+            DialogResult result = MessageBox.Show("Do you want to add the accounts to\n" + name + "?",
+                "Add Accounts", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.No)
+            {
+                return;
+            }
+
+            gvStaged.Rows[row].Cells["Documents"].Value = docs + val;
+            gvStaged.Rows[row].Cells["Accounts"].Selected = false;
+            gvStaged.Rows[row].Cells["Documents"].Selected = true;
+
+        }
+
         private void btnSendSelected_Click(object sender, EventArgs e)
         {
             string email, docs, code, send;
-
-            if (dtBilling != null)
+            try
             {
-                foreach (DataGridViewRow row in gvStaged.Rows)
+                if (dtBilling != null)
                 {
-                    email = row.Cells["Email"].Value.ToString();
-                    docs = row.Cells["Documents"].Value.ToString();
-                    code = row.Cells["Code"].Value.ToString();
-                    send = row.Cells["Send"].Value.ToString();
-                    
-                    if (send == "True" && email.Trim().Length > 2 && docs.Trim().Length > 2)
+                    foreach (DataGridViewRow row in gvStaged.Rows)
                     {
-                        SendBillingDocs(code, docs, email);
+                        email = row.Cells["Email"].Value.ToString();
+                        docs = row.Cells["Documents"].Value.ToString();
+                        code = row.Cells["Code"].Value.ToString();
+                        send = row.Cells["Send"].Value.ToString();
+
+                        if (send == "True" && email.Trim().Length > 2 && docs.Trim().Length > 2)
+                        {
+                            SendBillingDocs(code, docs, email);
+                        }
                     }
-                } 
+                }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Utility.WriteActivity(ex.Message);
+            }
+
         }
 
         private void btnRefreshSent_Click(object sender, EventArgs e)
         {
-            GetSentBIlling();
+            try
+            {
+                GetSentBIlling();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Utility.WriteActivity(ex.Message);
+            }
         }
 
         private void gvBillingSent_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -2173,6 +2335,92 @@ namespace OfficeAutomation
                         }
 
                     }
+            }
+        }
+
+        private void btnEmailExports_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnRefreshFacSettings_Click(object sender, EventArgs e)
+        {
+            LoadFacilities();
+        }
+
+        private void btnUserGuide_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var pth = Application.StartupPath + "\\scripts\\Office Automation Guide.docx";
+                Process.Start(pth);
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Utility.WriteActivity(ex.Message);
+            }
+        }
+
+        private void btnFrom_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var btnName = ((sender as Button).Name);
+                bool valid;
+                string msg = "Invalid numeric value";
+                (sender as Button).BackColor = Color.Yellow;
+                Point pt = new Point(10000, 10000);
+                if (MessageBox.Show("Do you want to update the selected value?", "Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+                {
+                    return;
+                }
+
+                switch (btnName)
+                {
+                    case "btnFrom":
+                        pt = ParsePoint(txtFrom.Text, out valid);
+                        if (!valid)
+                        {
+                            LogError(msg);
+                            return;
+                        }
+                        Properties.Settings.Default["fromCrop"] = pt;
+                        Properties.Settings.Default.Save();
+                        Utility.WriteActivity("Crop From updated");
+                        break;
+                    case "btnTo":
+                        pt = ParsePoint(txtTo.Text, out valid);
+                        if (!valid)
+                        {
+                            LogError(msg);
+                            return;
+                        }
+                        Properties.Settings.Default["toCrop"] = pt;
+                        Properties.Settings.Default.Save();
+                        Utility.WriteActivity("Crop To updated");
+                        break;
+                    case "btnDpi":
+                        int x = ParseInt(txtDpi.Text, out valid);
+                        if (!valid)
+                        {
+                            LogError(msg);
+                            return;
+                        }
+                        Properties.Settings.Default["dpi"] = x;
+                        Properties.Settings.Default.Save();
+                        Utility.WriteActivity("Image resolution updated");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex.Message);
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                (sender as Button).BackColor = Color.Transparent;
             }
         }
 
@@ -2243,12 +2491,11 @@ namespace OfficeAutomation
             gvBillingSent.DataSource = bs;
         }
 
-        //var checked = cbBillGrid.CheckState == CheckState.Checked ? true : false;
+
+
+
         #endregion
 
-        private void btnEmailExports_Click(object sender, EventArgs e)
-        {
 
-        }
     }
 }
