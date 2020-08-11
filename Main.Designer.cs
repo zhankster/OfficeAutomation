@@ -44,7 +44,6 @@ namespace OfficeAutomation
             this.btnOpen = new System.Windows.Forms.Button();
             this.txtInfo = new System.Windows.Forms.TextBox();
             this.tpAttach = new System.Windows.Forms.TabPage();
-            this.label45 = new System.Windows.Forms.Label();
             this.chkDate = new System.Windows.Forms.CheckBox();
             this.dptDownload = new System.Windows.Forms.DateTimePicker();
             this.txtCheck = new System.Windows.Forms.TextBox();
@@ -56,6 +55,10 @@ namespace OfficeAutomation
             this.btnProcess = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.tpBilling = new System.Windows.Forms.TabPage();
+            this.cbNotifyOnly = new System.Windows.Forms.CheckBox();
+            this.groupBox13 = new System.Windows.Forms.GroupBox();
+            this.rbFolder = new System.Windows.Forms.RadioButton();
+            this.rbBilling = new System.Windows.Forms.RadioButton();
             this.btnRefreshSent = new System.Windows.Forms.Button();
             this.lbSent = new System.Windows.Forms.Label();
             this.label41 = new System.Windows.Forms.Label();
@@ -81,7 +84,52 @@ namespace OfficeAutomation
             this.btnAltRptFolder = new System.Windows.Forms.Button();
             this.txtAltRptFolder = new System.Windows.Forms.TextBox();
             this.btnExportReports = new System.Windows.Forms.Button();
+            this.tpEmail = new System.Windows.Forms.TabPage();
+            this.groupBox9 = new System.Windows.Forms.GroupBox();
+            this.groupBox11 = new System.Windows.Forms.GroupBox();
+            this.groupBox12 = new System.Windows.Forms.GroupBox();
+            this.rbSend = new System.Windows.Forms.RadioButton();
+            this.rbData = new System.Windows.Forms.RadioButton();
+            this.txtFilterRpt = new System.Windows.Forms.TextBox();
+            this.label20 = new System.Windows.Forms.Label();
+            this.groupBox10 = new System.Windows.Forms.GroupBox();
+            this.btnClear = new System.Windows.Forms.Button();
+            this.btnAddRpt = new System.Windows.Forms.Button();
+            this.label18 = new System.Windows.Forms.Label();
+            this.txtSendRpt = new System.Windows.Forms.TextBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.txtDataRpt = new System.Windows.Forms.TextBox();
+            this.btnRefreshRpt = new System.Windows.Forms.Button();
+            this.gvRpt = new System.Windows.Forms.DataGridView();
+            this.groupBox8 = new System.Windows.Forms.GroupBox();
+            this.btnSaveEmail = new System.Windows.Forms.Button();
+            this.label45 = new System.Windows.Forms.Label();
+            this.label44 = new System.Windows.Forms.Label();
+            this.groupBox14 = new System.Windows.Forms.GroupBox();
+            this.rbEmailSend = new System.Windows.Forms.RadioButton();
+            this.rbEmailNotify = new System.Windows.Forms.RadioButton();
+            this.txtEmailSubject = new System.Windows.Forms.TextBox();
+            this.txtEmailMessage = new System.Windows.Forms.TextBox();
+            this.btnRefreshFacSettings = new System.Windows.Forms.Button();
+            this.gvFac = new System.Windows.Forms.DataGridView();
+            this.txtFacFilter = new System.Windows.Forms.TextBox();
+            this.btnUpdateAddresses = new System.Windows.Forms.Button();
+            this.label14 = new System.Windows.Forms.Label();
+            this.btnAddEmail = new System.Windows.Forms.Button();
+            this.txtGroupCode = new System.Windows.Forms.TextBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.txtFacilityName = new System.Windows.Forms.TextBox();
+            this.txtFacEmail = new System.Windows.Forms.TextBox();
+            this.label15 = new System.Windows.Forms.Label();
+            this.gvFacEmail = new System.Windows.Forms.DataGridView();
+            this.txtFacUser = new System.Windows.Forms.TextBox();
+            this.label19 = new System.Windows.Forms.Label();
+            this.lbUpdate = new System.Windows.Forms.Label();
+            this.btnCheckGC = new System.Windows.Forms.Button();
+            this.btnAddNew = new System.Windows.Forms.Button();
+            this.btnFacSave = new System.Windows.Forms.Button();
             this.tpSettings = new System.Windows.Forms.TabPage();
+            this.btnUpdate = new System.Windows.Forms.Button();
             this.btnUserGuide = new System.Windows.Forms.Button();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.btnPasswordAttachment = new System.Windows.Forms.Button();
@@ -117,6 +165,9 @@ namespace OfficeAutomation
             this.txtProcessFolder = new System.Windows.Forms.TextBox();
             this.txtDownloadFolder = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.btnUpdateFolder = new System.Windows.Forms.Button();
+            this.label46 = new System.Windows.Forms.Label();
+            this.txtUpdateFolder = new System.Windows.Forms.TextBox();
             this.btnWS_ID = new System.Windows.Forms.Button();
             this.label43 = new System.Windows.Forms.Label();
             this.txtWS_ID = new System.Windows.Forms.TextBox();
@@ -174,28 +225,6 @@ namespace OfficeAutomation
             this.label4 = new System.Windows.Forms.Label();
             this.txtNotifyExports = new System.Windows.Forms.TextBox();
             this.txtNotifyReport = new System.Windows.Forms.TextBox();
-            this.tpEmail = new System.Windows.Forms.TabPage();
-            this.btnRefreshFacSettings = new System.Windows.Forms.Button();
-            this.lbUpdate = new System.Windows.Forms.Label();
-            this.cbFacNotify = new System.Windows.Forms.ComboBox();
-            this.label20 = new System.Windows.Forms.Label();
-            this.btnAddNew = new System.Windows.Forms.Button();
-            this.btnFacSave = new System.Windows.Forms.Button();
-            this.btnCheckGC = new System.Windows.Forms.Button();
-            this.label19 = new System.Windows.Forms.Label();
-            this.txtFacUser = new System.Windows.Forms.TextBox();
-            this.label18 = new System.Windows.Forms.Label();
-            this.txtFacPhone = new System.Windows.Forms.TextBox();
-            this.label17 = new System.Windows.Forms.Label();
-            this.txtFacFax = new System.Windows.Forms.TextBox();
-            this.label16 = new System.Windows.Forms.Label();
-            this.txtEmailAddresses = new System.Windows.Forms.TextBox();
-            this.label15 = new System.Windows.Forms.Label();
-            this.txtFacilityName = new System.Windows.Forms.TextBox();
-            this.txtGroupCode = new System.Windows.Forms.TextBox();
-            this.label14 = new System.Windows.Forms.Label();
-            this.txtFacFilter = new System.Windows.Forms.TextBox();
-            this.gvFac = new System.Windows.Forms.DataGridView();
             this.lvProcessing = new System.Windows.Forms.ListView();
             this.colTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colDetails = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -205,8 +234,19 @@ namespace OfficeAutomation
             this.tpAttach.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbCheck)).BeginInit();
             this.tpBilling.SuspendLayout();
+            this.groupBox13.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvBillingSent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvStaged)).BeginInit();
+            this.tpEmail.SuspendLayout();
+            this.groupBox9.SuspendLayout();
+            this.groupBox11.SuspendLayout();
+            this.groupBox12.SuspendLayout();
+            this.groupBox10.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.gvRpt)).BeginInit();
+            this.groupBox8.SuspendLayout();
+            this.groupBox14.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.gvFac)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvFacEmail)).BeginInit();
             this.tpSettings.SuspendLayout();
             this.groupBox7.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -215,8 +255,6 @@ namespace OfficeAutomation
             this.groupBox3.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.tpEmail.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.gvFac)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -227,8 +265,8 @@ namespace OfficeAutomation
             this.tabControl1.Controls.Add(this.tpFac);
             this.tabControl1.Controls.Add(this.tpAttach);
             this.tabControl1.Controls.Add(this.tpBilling);
-            this.tabControl1.Controls.Add(this.tpSettings);
             this.tabControl1.Controls.Add(this.tpEmail);
+            this.tabControl1.Controls.Add(this.tpSettings);
             this.tabControl1.Location = new System.Drawing.Point(2, 1);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -360,7 +398,6 @@ namespace OfficeAutomation
             // 
             // tpAttach
             // 
-            this.tpAttach.Controls.Add(this.label45);
             this.tpAttach.Controls.Add(this.chkDate);
             this.tpAttach.Controls.Add(this.dptDownload);
             this.tpAttach.Controls.Add(this.txtCheck);
@@ -377,15 +414,6 @@ namespace OfficeAutomation
             this.tpAttach.TabIndex = 4;
             this.tpAttach.Text = "Attachment Processing";
             this.tpAttach.UseVisualStyleBackColor = true;
-            // 
-            // label45
-            // 
-            this.label45.AutoSize = true;
-            this.label45.Location = new System.Drawing.Point(876, 33);
-            this.label45.Name = "label45";
-            this.label45.Size = new System.Drawing.Size(41, 13);
-            this.label45.TabIndex = 22;
-            this.label45.Text = "label45";
             // 
             // chkDate
             // 
@@ -487,6 +515,8 @@ namespace OfficeAutomation
             // 
             // tpBilling
             // 
+            this.tpBilling.Controls.Add(this.cbNotifyOnly);
+            this.tpBilling.Controls.Add(this.groupBox13);
             this.tpBilling.Controls.Add(this.btnRefreshSent);
             this.tpBilling.Controls.Add(this.lbSent);
             this.tpBilling.Controls.Add(this.label41);
@@ -518,6 +548,49 @@ namespace OfficeAutomation
             this.tpBilling.TabIndex = 3;
             this.tpBilling.Text = "Billing";
             this.tpBilling.UseVisualStyleBackColor = true;
+            // 
+            // cbNotifyOnly
+            // 
+            this.cbNotifyOnly.AutoSize = true;
+            this.cbNotifyOnly.Location = new System.Drawing.Point(17, 272);
+            this.cbNotifyOnly.Name = "cbNotifyOnly";
+            this.cbNotifyOnly.Size = new System.Drawing.Size(77, 17);
+            this.cbNotifyOnly.TabIndex = 48;
+            this.cbNotifyOnly.Text = "Notify Only";
+            this.cbNotifyOnly.UseVisualStyleBackColor = true;
+            // 
+            // groupBox13
+            // 
+            this.groupBox13.Controls.Add(this.rbFolder);
+            this.groupBox13.Controls.Add(this.rbBilling);
+            this.groupBox13.Location = new System.Drawing.Point(17, 62);
+            this.groupBox13.Name = "groupBox13";
+            this.groupBox13.Size = new System.Drawing.Size(183, 33);
+            this.groupBox13.TabIndex = 47;
+            this.groupBox13.TabStop = false;
+            this.groupBox13.Text = "Type";
+            // 
+            // rbFolder
+            // 
+            this.rbFolder.AutoSize = true;
+            this.rbFolder.Location = new System.Drawing.Point(119, 10);
+            this.rbFolder.Name = "rbFolder";
+            this.rbFolder.Size = new System.Drawing.Size(54, 17);
+            this.rbFolder.TabIndex = 1;
+            this.rbFolder.Text = "Folder";
+            this.rbFolder.UseVisualStyleBackColor = true;
+            // 
+            // rbBilling
+            // 
+            this.rbBilling.AutoSize = true;
+            this.rbBilling.Checked = true;
+            this.rbBilling.Location = new System.Drawing.Point(41, 10);
+            this.rbBilling.Name = "rbBilling";
+            this.rbBilling.Size = new System.Drawing.Size(52, 17);
+            this.rbBilling.TabIndex = 0;
+            this.rbBilling.TabStop = true;
+            this.rbBilling.Text = "Billing";
+            this.rbBilling.UseVisualStyleBackColor = true;
             // 
             // btnRefreshSent
             // 
@@ -551,7 +624,7 @@ namespace OfficeAutomation
             // 
             // btnSendSelected
             // 
-            this.btnSendSelected.Location = new System.Drawing.Point(17, 254);
+            this.btnSendSelected.Location = new System.Drawing.Point(17, 239);
             this.btnSendSelected.Name = "btnSendSelected";
             this.btnSendSelected.Size = new System.Drawing.Size(91, 27);
             this.btnSendSelected.TabIndex = 43;
@@ -562,7 +635,7 @@ namespace OfficeAutomation
             // cbBillingDate
             // 
             this.cbBillingDate.AutoSize = true;
-            this.cbBillingDate.Location = new System.Drawing.Point(15, 231);
+            this.cbBillingDate.Location = new System.Drawing.Point(15, 216);
             this.cbBillingDate.Name = "cbBillingDate";
             this.cbBillingDate.Size = new System.Drawing.Size(96, 17);
             this.cbBillingDate.TabIndex = 42;
@@ -575,7 +648,7 @@ namespace OfficeAutomation
             this.dpBilling.CustomFormat = "MMMM yyyy";
             this.dpBilling.Enabled = false;
             this.dpBilling.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dpBilling.Location = new System.Drawing.Point(11, 204);
+            this.dpBilling.Location = new System.Drawing.Point(11, 189);
             this.dpBilling.Name = "dpBilling";
             this.dpBilling.ShowUpDown = true;
             this.dpBilling.Size = new System.Drawing.Size(102, 20);
@@ -764,8 +837,470 @@ namespace OfficeAutomation
             this.btnExportReports.UseVisualStyleBackColor = true;
             this.btnExportReports.Click += new System.EventHandler(this.btnExportReports_Click);
             // 
+            // tpEmail
+            // 
+            this.tpEmail.Controls.Add(this.groupBox9);
+            this.tpEmail.Controls.Add(this.groupBox8);
+            this.tpEmail.Location = new System.Drawing.Point(4, 22);
+            this.tpEmail.Name = "tpEmail";
+            this.tpEmail.Padding = new System.Windows.Forms.Padding(3);
+            this.tpEmail.Size = new System.Drawing.Size(1175, 454);
+            this.tpEmail.TabIndex = 1;
+            this.tpEmail.Text = "Facility Maintenance";
+            this.tpEmail.UseVisualStyleBackColor = true;
+            // 
+            // groupBox9
+            // 
+            this.groupBox9.Controls.Add(this.groupBox11);
+            this.groupBox9.Controls.Add(this.groupBox10);
+            this.groupBox9.Controls.Add(this.btnRefreshRpt);
+            this.groupBox9.Controls.Add(this.gvRpt);
+            this.groupBox9.Location = new System.Drawing.Point(601, 6);
+            this.groupBox9.Name = "groupBox9";
+            this.groupBox9.Size = new System.Drawing.Size(559, 442);
+            this.groupBox9.TabIndex = 30;
+            this.groupBox9.TabStop = false;
+            this.groupBox9.Text = "Report Settings";
+            // 
+            // groupBox11
+            // 
+            this.groupBox11.Controls.Add(this.groupBox12);
+            this.groupBox11.Controls.Add(this.txtFilterRpt);
+            this.groupBox11.Controls.Add(this.label20);
+            this.groupBox11.Location = new System.Drawing.Point(307, 23);
+            this.groupBox11.Name = "groupBox11";
+            this.groupBox11.Size = new System.Drawing.Size(235, 101);
+            this.groupBox11.TabIndex = 36;
+            this.groupBox11.TabStop = false;
+            // 
+            // groupBox12
+            // 
+            this.groupBox12.Controls.Add(this.rbSend);
+            this.groupBox12.Controls.Add(this.rbData);
+            this.groupBox12.Location = new System.Drawing.Point(67, 8);
+            this.groupBox12.Name = "groupBox12";
+            this.groupBox12.Size = new System.Drawing.Size(139, 57);
+            this.groupBox12.TabIndex = 38;
+            this.groupBox12.TabStop = false;
+            // 
+            // rbSend
+            // 
+            this.rbSend.AutoSize = true;
+            this.rbSend.Checked = true;
+            this.rbSend.Location = new System.Drawing.Point(22, 37);
+            this.rbSend.Name = "rbSend";
+            this.rbSend.Size = new System.Drawing.Size(78, 17);
+            this.rbSend.TabIndex = 35;
+            this.rbSend.TabStop = true;
+            this.rbSend.Text = "Send Code";
+            this.rbSend.UseVisualStyleBackColor = true;
+            // 
+            // rbData
+            // 
+            this.rbData.AutoSize = true;
+            this.rbData.Location = new System.Drawing.Point(22, 11);
+            this.rbData.Name = "rbData";
+            this.rbData.Size = new System.Drawing.Size(76, 17);
+            this.rbData.TabIndex = 37;
+            this.rbData.Text = "Data Code";
+            this.rbData.UseVisualStyleBackColor = true;
+            // 
+            // txtFilterRpt
+            // 
+            this.txtFilterRpt.Location = new System.Drawing.Point(69, 70);
+            this.txtFilterRpt.Name = "txtFilterRpt";
+            this.txtFilterRpt.Size = new System.Drawing.Size(137, 20);
+            this.txtFilterRpt.TabIndex = 33;
+            this.txtFilterRpt.TextChanged += new System.EventHandler(this.txtFilterRpt_TextChanged);
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label20.Location = new System.Drawing.Point(28, 73);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(35, 13);
+            this.label20.TabIndex = 34;
+            this.label20.Text = "Filter";
+            // 
+            // groupBox10
+            // 
+            this.groupBox10.Controls.Add(this.btnClear);
+            this.groupBox10.Controls.Add(this.btnAddRpt);
+            this.groupBox10.Controls.Add(this.label18);
+            this.groupBox10.Controls.Add(this.txtSendRpt);
+            this.groupBox10.Controls.Add(this.label17);
+            this.groupBox10.Controls.Add(this.txtDataRpt);
+            this.groupBox10.Location = new System.Drawing.Point(79, 23);
+            this.groupBox10.Name = "groupBox10";
+            this.groupBox10.Size = new System.Drawing.Size(220, 98);
+            this.groupBox10.TabIndex = 35;
+            this.groupBox10.TabStop = false;
+            // 
+            // btnClear
+            // 
+            this.btnClear.Location = new System.Drawing.Point(13, 12);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(54, 23);
+            this.btnClear.TabIndex = 33;
+            this.btnClear.Text = "Clear";
+            this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
+            // btnAddRpt
+            // 
+            this.btnAddRpt.Location = new System.Drawing.Point(13, 68);
+            this.btnAddRpt.Name = "btnAddRpt";
+            this.btnAddRpt.Size = new System.Drawing.Size(54, 23);
+            this.btnAddRpt.TabIndex = 27;
+            this.btnAddRpt.Text = "Add";
+            this.btnAddRpt.UseVisualStyleBackColor = true;
+            this.btnAddRpt.Click += new System.EventHandler(this.btnAddRpt_Click);
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(74, 55);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(133, 13);
+            this.label18.TabIndex = 32;
+            this.label18.Text = "Code for Sending Location";
+            // 
+            // txtSendRpt
+            // 
+            this.txtSendRpt.Location = new System.Drawing.Point(100, 71);
+            this.txtSendRpt.Name = "txtSendRpt";
+            this.txtSendRpt.Size = new System.Drawing.Size(80, 20);
+            this.txtSendRpt.TabIndex = 31;
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(104, 13);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(73, 13);
+            this.label17.TabIndex = 30;
+            this.label17.Text = "Code for Data";
+            // 
+            // txtDataRpt
+            // 
+            this.txtDataRpt.Location = new System.Drawing.Point(93, 28);
+            this.txtDataRpt.Name = "txtDataRpt";
+            this.txtDataRpt.Size = new System.Drawing.Size(94, 20);
+            this.txtDataRpt.TabIndex = 29;
+            // 
+            // btnRefreshRpt
+            // 
+            this.btnRefreshRpt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnRefreshRpt.Location = new System.Drawing.Point(6, 96);
+            this.btnRefreshRpt.Name = "btnRefreshRpt";
+            this.btnRefreshRpt.Size = new System.Drawing.Size(61, 23);
+            this.btnRefreshRpt.TabIndex = 28;
+            this.btnRefreshRpt.Text = "Refresh";
+            this.btnRefreshRpt.UseVisualStyleBackColor = true;
+            this.btnRefreshRpt.Click += new System.EventHandler(this.btnRefreshRpt_Click);
+            // 
+            // gvRpt
+            // 
+            this.gvRpt.AllowUserToAddRows = false;
+            this.gvRpt.AllowUserToDeleteRows = false;
+            this.gvRpt.AllowUserToOrderColumns = true;
+            this.gvRpt.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            this.gvRpt.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gvRpt.Location = new System.Drawing.Point(7, 128);
+            this.gvRpt.Name = "gvRpt";
+            this.gvRpt.Size = new System.Drawing.Size(547, 194);
+            this.gvRpt.TabIndex = 27;
+            this.gvRpt.RowHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.gvRpt_RowHeaderMouseClick);
+            this.gvRpt.MouseClick += new System.Windows.Forms.MouseEventHandler(this.gvRpt_MouseClick);
+            // 
+            // groupBox8
+            // 
+            this.groupBox8.Controls.Add(this.btnSaveEmail);
+            this.groupBox8.Controls.Add(this.label45);
+            this.groupBox8.Controls.Add(this.label44);
+            this.groupBox8.Controls.Add(this.groupBox14);
+            this.groupBox8.Controls.Add(this.txtEmailSubject);
+            this.groupBox8.Controls.Add(this.txtEmailMessage);
+            this.groupBox8.Controls.Add(this.btnRefreshFacSettings);
+            this.groupBox8.Controls.Add(this.gvFac);
+            this.groupBox8.Controls.Add(this.txtFacFilter);
+            this.groupBox8.Controls.Add(this.btnUpdateAddresses);
+            this.groupBox8.Controls.Add(this.label14);
+            this.groupBox8.Controls.Add(this.btnAddEmail);
+            this.groupBox8.Controls.Add(this.txtGroupCode);
+            this.groupBox8.Controls.Add(this.label16);
+            this.groupBox8.Controls.Add(this.txtFacilityName);
+            this.groupBox8.Controls.Add(this.txtFacEmail);
+            this.groupBox8.Controls.Add(this.label15);
+            this.groupBox8.Controls.Add(this.gvFacEmail);
+            this.groupBox8.Controls.Add(this.txtFacUser);
+            this.groupBox8.Controls.Add(this.label19);
+            this.groupBox8.Controls.Add(this.lbUpdate);
+            this.groupBox8.Controls.Add(this.btnCheckGC);
+            this.groupBox8.Controls.Add(this.btnAddNew);
+            this.groupBox8.Controls.Add(this.btnFacSave);
+            this.groupBox8.Location = new System.Drawing.Point(6, 6);
+            this.groupBox8.Name = "groupBox8";
+            this.groupBox8.Size = new System.Drawing.Size(576, 442);
+            this.groupBox8.TabIndex = 29;
+            this.groupBox8.TabStop = false;
+            this.groupBox8.Text = "Facility Email Settings";
+            // 
+            // btnSaveEmail
+            // 
+            this.btnSaveEmail.Location = new System.Drawing.Point(196, 367);
+            this.btnSaveEmail.Name = "btnSaveEmail";
+            this.btnSaveEmail.Size = new System.Drawing.Size(46, 23);
+            this.btnSaveEmail.TabIndex = 42;
+            this.btnSaveEmail.Text = "Save";
+            this.btnSaveEmail.UseVisualStyleBackColor = true;
+            this.btnSaveEmail.Click += new System.EventHandler(this.btnTextBox_Click);
+            // 
+            // label45
+            // 
+            this.label45.AutoSize = true;
+            this.label45.Location = new System.Drawing.Point(290, 359);
+            this.label45.Name = "label45";
+            this.label45.Size = new System.Drawing.Size(50, 13);
+            this.label45.TabIndex = 41;
+            this.label45.Text = "Message";
+            // 
+            // label44
+            // 
+            this.label44.AutoSize = true;
+            this.label44.Location = new System.Drawing.Point(23, 401);
+            this.label44.Name = "label44";
+            this.label44.Size = new System.Drawing.Size(43, 13);
+            this.label44.TabIndex = 40;
+            this.label44.Text = "Subject";
+            // 
+            // groupBox14
+            // 
+            this.groupBox14.Controls.Add(this.rbEmailSend);
+            this.groupBox14.Controls.Add(this.rbEmailNotify);
+            this.groupBox14.Location = new System.Drawing.Point(26, 362);
+            this.groupBox14.Name = "groupBox14";
+            this.groupBox14.Size = new System.Drawing.Size(164, 30);
+            this.groupBox14.TabIndex = 39;
+            this.groupBox14.TabStop = false;
+            // 
+            // rbEmailSend
+            // 
+            this.rbEmailSend.AutoSize = true;
+            this.rbEmailSend.Checked = true;
+            this.rbEmailSend.Location = new System.Drawing.Point(10, 8);
+            this.rbEmailSend.Name = "rbEmailSend";
+            this.rbEmailSend.Size = new System.Drawing.Size(80, 17);
+            this.rbEmailSend.TabIndex = 35;
+            this.rbEmailSend.TabStop = true;
+            this.rbEmailSend.Text = "Send Billing";
+            this.rbEmailSend.UseVisualStyleBackColor = true;
+            this.rbEmailSend.CheckedChanged += new System.EventHandler(this.rbEmailSend_CheckedChanged);
+            // 
+            // rbEmailNotify
+            // 
+            this.rbEmailNotify.AutoSize = true;
+            this.rbEmailNotify.Location = new System.Drawing.Point(96, 8);
+            this.rbEmailNotify.Name = "rbEmailNotify";
+            this.rbEmailNotify.Size = new System.Drawing.Size(54, 17);
+            this.rbEmailNotify.TabIndex = 37;
+            this.rbEmailNotify.Text = "Noitify";
+            this.rbEmailNotify.UseVisualStyleBackColor = true;
+            // 
+            // txtEmailSubject
+            // 
+            this.txtEmailSubject.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtEmailSubject.Location = new System.Drawing.Point(26, 416);
+            this.txtEmailSubject.Name = "txtEmailSubject";
+            this.txtEmailSubject.Size = new System.Drawing.Size(261, 18);
+            this.txtEmailSubject.TabIndex = 28;
+            // 
+            // txtEmailMessage
+            // 
+            this.txtEmailMessage.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtEmailMessage.Location = new System.Drawing.Point(293, 373);
+            this.txtEmailMessage.Multiline = true;
+            this.txtEmailMessage.Name = "txtEmailMessage";
+            this.txtEmailMessage.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
+            this.txtEmailMessage.Size = new System.Drawing.Size(267, 63);
+            this.txtEmailMessage.TabIndex = 27;
+            // 
+            // btnRefreshFacSettings
+            // 
+            this.btnRefreshFacSettings.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnRefreshFacSettings.Location = new System.Drawing.Point(24, 18);
+            this.btnRefreshFacSettings.Name = "btnRefreshFacSettings";
+            this.btnRefreshFacSettings.Size = new System.Drawing.Size(61, 23);
+            this.btnRefreshFacSettings.TabIndex = 21;
+            this.btnRefreshFacSettings.Text = "Refresh";
+            this.btnRefreshFacSettings.UseVisualStyleBackColor = true;
+            this.btnRefreshFacSettings.Click += new System.EventHandler(this.btnRefreshFacSettings_Click);
+            // 
+            // gvFac
+            // 
+            this.gvFac.AllowUserToAddRows = false;
+            this.gvFac.AllowUserToDeleteRows = false;
+            this.gvFac.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gvFac.Location = new System.Drawing.Point(24, 223);
+            this.gvFac.Name = "gvFac";
+            this.gvFac.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.gvFac.Size = new System.Drawing.Size(536, 133);
+            this.gvFac.TabIndex = 0;
+            this.gvFac.RowHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.gvFac_RowHeaderMouseClick);
+            // 
+            // txtFacFilter
+            // 
+            this.txtFacFilter.Location = new System.Drawing.Point(371, 198);
+            this.txtFacFilter.Name = "txtFacFilter";
+            this.txtFacFilter.Size = new System.Drawing.Size(177, 20);
+            this.txtFacFilter.TabIndex = 1;
+            this.txtFacFilter.TextChanged += new System.EventHandler(this.txtFacFilter_TextChanged);
+            // 
+            // btnUpdateAddresses
+            // 
+            this.btnUpdateAddresses.Location = new System.Drawing.Point(357, 146);
+            this.btnUpdateAddresses.Name = "btnUpdateAddresses";
+            this.btnUpdateAddresses.Size = new System.Drawing.Size(114, 23);
+            this.btnUpdateAddresses.TabIndex = 26;
+            this.btnUpdateAddresses.Text = "Update Addresses";
+            this.btnUpdateAddresses.UseVisualStyleBackColor = true;
+            this.btnUpdateAddresses.Click += new System.EventHandler(this.btnUpdateAddresses_Click);
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label14.Location = new System.Drawing.Point(333, 202);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(35, 13);
+            this.label14.TabIndex = 2;
+            this.label14.Text = "Filter";
+            // 
+            // btnAddEmail
+            // 
+            this.btnAddEmail.Location = new System.Drawing.Point(24, 198);
+            this.btnAddEmail.Name = "btnAddEmail";
+            this.btnAddEmail.Size = new System.Drawing.Size(46, 23);
+            this.btnAddEmail.TabIndex = 25;
+            this.btnAddEmail.Text = "Add";
+            this.btnAddEmail.UseVisualStyleBackColor = true;
+            this.btnAddEmail.Click += new System.EventHandler(this.btnAddEmail_Click);
+            // 
+            // txtGroupCode
+            // 
+            this.txtGroupCode.Location = new System.Drawing.Point(134, 66);
+            this.txtGroupCode.Name = "txtGroupCode";
+            this.txtGroupCode.ReadOnly = true;
+            this.txtGroupCode.Size = new System.Drawing.Size(56, 20);
+            this.txtGroupCode.TabIndex = 3;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(81, 187);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(73, 13);
+            this.label16.TabIndex = 24;
+            this.label16.Text = "Email Address";
+            // 
+            // txtFacilityName
+            // 
+            this.txtFacilityName.Location = new System.Drawing.Point(26, 95);
+            this.txtFacilityName.Name = "txtFacilityName";
+            this.txtFacilityName.ReadOnly = true;
+            this.txtFacilityName.Size = new System.Drawing.Size(229, 20);
+            this.txtFacilityName.TabIndex = 4;
+            // 
+            // txtFacEmail
+            // 
+            this.txtFacEmail.Location = new System.Drawing.Point(82, 200);
+            this.txtFacEmail.Name = "txtFacEmail";
+            this.txtFacEmail.Size = new System.Drawing.Size(219, 20);
+            this.txtFacEmail.TabIndex = 23;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(63, 69);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(64, 13);
+            this.label15.TabIndex = 5;
+            this.label15.Text = "Group Code";
+            // 
+            // gvFacEmail
+            // 
+            this.gvFacEmail.AllowUserToAddRows = false;
+            this.gvFacEmail.AllowUserToDeleteRows = false;
+            this.gvFacEmail.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
+            this.gvFacEmail.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            this.gvFacEmail.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gvFacEmail.Location = new System.Drawing.Point(272, 16);
+            this.gvFacEmail.Name = "gvFacEmail";
+            this.gvFacEmail.Size = new System.Drawing.Size(288, 126);
+            this.gvFacEmail.TabIndex = 22;
+            // 
+            // txtFacUser
+            // 
+            this.txtFacUser.Location = new System.Drawing.Point(82, 121);
+            this.txtFacUser.Multiline = true;
+            this.txtFacUser.Name = "txtFacUser";
+            this.txtFacUser.Size = new System.Drawing.Size(173, 45);
+            this.txtFacUser.TabIndex = 12;
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(23, 121);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(56, 13);
+            this.label19.TabIndex = 13;
+            this.label19.Text = "Comments";
+            // 
+            // lbUpdate
+            // 
+            this.lbUpdate.AutoSize = true;
+            this.lbUpdate.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbUpdate.Location = new System.Drawing.Point(134, 50);
+            this.lbUpdate.Name = "lbUpdate";
+            this.lbUpdate.Size = new System.Drawing.Size(52, 13);
+            this.lbUpdate.TabIndex = 20;
+            this.lbUpdate.Text = "Update ";
+            // 
+            // btnCheckGC
+            // 
+            this.btnCheckGC.Location = new System.Drawing.Point(197, 63);
+            this.btnCheckGC.Name = "btnCheckGC";
+            this.btnCheckGC.Size = new System.Drawing.Size(58, 23);
+            this.btnCheckGC.TabIndex = 14;
+            this.btnCheckGC.Text = "Check";
+            this.btnCheckGC.UseVisualStyleBackColor = true;
+            this.btnCheckGC.Click += new System.EventHandler(this.btnCheckGC_Click);
+            // 
+            // btnAddNew
+            // 
+            this.btnAddNew.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.btnAddNew.Location = new System.Drawing.Point(105, 18);
+            this.btnAddNew.Name = "btnAddNew";
+            this.btnAddNew.Size = new System.Drawing.Size(85, 23);
+            this.btnAddNew.TabIndex = 16;
+            this.btnAddNew.Text = "Add New";
+            this.btnAddNew.UseVisualStyleBackColor = true;
+            this.btnAddNew.Click += new System.EventHandler(this.btnAddNew_Click);
+            // 
+            // btnFacSave
+            // 
+            this.btnFacSave.Location = new System.Drawing.Point(197, 18);
+            this.btnFacSave.Name = "btnFacSave";
+            this.btnFacSave.Size = new System.Drawing.Size(58, 23);
+            this.btnFacSave.TabIndex = 15;
+            this.btnFacSave.Text = "Save";
+            this.btnFacSave.UseVisualStyleBackColor = true;
+            this.btnFacSave.Click += new System.EventHandler(this.btnFacSave_Click);
+            // 
             // tpSettings
             // 
+            this.tpSettings.Controls.Add(this.btnUpdate);
             this.tpSettings.Controls.Add(this.btnUserGuide);
             this.tpSettings.Controls.Add(this.groupBox7);
             this.tpSettings.Controls.Add(this.groupBox6);
@@ -780,6 +1315,16 @@ namespace OfficeAutomation
             this.tpSettings.TabIndex = 2;
             this.tpSettings.Text = "Settings";
             this.tpSettings.UseVisualStyleBackColor = true;
+            // 
+            // btnUpdate
+            // 
+            this.btnUpdate.Location = new System.Drawing.Point(118, 420);
+            this.btnUpdate.Name = "btnUpdate";
+            this.btnUpdate.Size = new System.Drawing.Size(52, 23);
+            this.btnUpdate.TabIndex = 11;
+            this.btnUpdate.Text = "Update";
+            this.btnUpdate.UseVisualStyleBackColor = true;
+            this.btnUpdate.Click += new System.EventHandler(this.btnUpdate_Click);
             // 
             // btnUserGuide
             // 
@@ -1131,6 +1676,9 @@ namespace OfficeAutomation
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.btnUpdateFolder);
+            this.groupBox4.Controls.Add(this.label46);
+            this.groupBox4.Controls.Add(this.txtUpdateFolder);
             this.groupBox4.Controls.Add(this.btnWS_ID);
             this.groupBox4.Controls.Add(this.label43);
             this.groupBox4.Controls.Add(this.txtWS_ID);
@@ -1142,10 +1690,38 @@ namespace OfficeAutomation
             this.groupBox4.Controls.Add(this.txtFaxPrinter);
             this.groupBox4.Location = new System.Drawing.Point(464, 222);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(340, 133);
+            this.groupBox4.Size = new System.Drawing.Size(340, 181);
             this.groupBox4.TabIndex = 5;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Misc";
+            // 
+            // btnUpdateFolder
+            // 
+            this.btnUpdateFolder.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnUpdateFolder.Location = new System.Drawing.Point(287, 129);
+            this.btnUpdateFolder.Name = "btnUpdateFolder";
+            this.btnUpdateFolder.Size = new System.Drawing.Size(38, 22);
+            this.btnUpdateFolder.TabIndex = 28;
+            this.btnUpdateFolder.Text = ">>>";
+            this.btnUpdateFolder.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.btnUpdateFolder.UseVisualStyleBackColor = true;
+            this.btnUpdateFolder.Click += new System.EventHandler(this.btnFolder_Click);
+            // 
+            // label46
+            // 
+            this.label46.AutoSize = true;
+            this.label46.Location = new System.Drawing.Point(-1, 134);
+            this.label46.Name = "label46";
+            this.label46.Size = new System.Drawing.Size(74, 13);
+            this.label46.TabIndex = 27;
+            this.label46.Text = "Update Folder";
+            // 
+            // txtUpdateFolder
+            // 
+            this.txtUpdateFolder.Location = new System.Drawing.Point(77, 130);
+            this.txtUpdateFolder.Name = "txtUpdateFolder";
+            this.txtUpdateFolder.Size = new System.Drawing.Size(204, 20);
+            this.txtUpdateFolder.TabIndex = 26;
             // 
             // btnWS_ID
             // 
@@ -1162,7 +1738,7 @@ namespace OfficeAutomation
             // label43
             // 
             this.label43.AutoSize = true;
-            this.label43.Location = new System.Drawing.Point(5, 97);
+            this.label43.Location = new System.Drawing.Point(0, 97);
             this.label43.Name = "label43";
             this.label43.Size = new System.Drawing.Size(71, 13);
             this.label43.TabIndex = 24;
@@ -1190,7 +1766,7 @@ namespace OfficeAutomation
             // label22
             // 
             this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(14, 60);
+            this.label22.Location = new System.Drawing.Point(8, 59);
             this.label22.Name = "label22";
             this.label22.Size = new System.Drawing.Size(63, 13);
             this.label22.TabIndex = 4;
@@ -1218,7 +1794,7 @@ namespace OfficeAutomation
             // label26
             // 
             this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(14, 26);
+            this.label26.Location = new System.Drawing.Point(14, 23);
             this.label26.Name = "label26";
             this.label26.Size = new System.Drawing.Size(57, 13);
             this.label26.TabIndex = 2;
@@ -1724,228 +2300,6 @@ namespace OfficeAutomation
             this.txtNotifyReport.Size = new System.Drawing.Size(268, 20);
             this.txtNotifyReport.TabIndex = 0;
             // 
-            // tpEmail
-            // 
-            this.tpEmail.Controls.Add(this.btnRefreshFacSettings);
-            this.tpEmail.Controls.Add(this.lbUpdate);
-            this.tpEmail.Controls.Add(this.cbFacNotify);
-            this.tpEmail.Controls.Add(this.label20);
-            this.tpEmail.Controls.Add(this.btnAddNew);
-            this.tpEmail.Controls.Add(this.btnFacSave);
-            this.tpEmail.Controls.Add(this.btnCheckGC);
-            this.tpEmail.Controls.Add(this.label19);
-            this.tpEmail.Controls.Add(this.txtFacUser);
-            this.tpEmail.Controls.Add(this.label18);
-            this.tpEmail.Controls.Add(this.txtFacPhone);
-            this.tpEmail.Controls.Add(this.label17);
-            this.tpEmail.Controls.Add(this.txtFacFax);
-            this.tpEmail.Controls.Add(this.label16);
-            this.tpEmail.Controls.Add(this.txtEmailAddresses);
-            this.tpEmail.Controls.Add(this.label15);
-            this.tpEmail.Controls.Add(this.txtFacilityName);
-            this.tpEmail.Controls.Add(this.txtGroupCode);
-            this.tpEmail.Controls.Add(this.label14);
-            this.tpEmail.Controls.Add(this.txtFacFilter);
-            this.tpEmail.Controls.Add(this.gvFac);
-            this.tpEmail.Location = new System.Drawing.Point(4, 22);
-            this.tpEmail.Name = "tpEmail";
-            this.tpEmail.Padding = new System.Windows.Forms.Padding(3);
-            this.tpEmail.Size = new System.Drawing.Size(1175, 454);
-            this.tpEmail.TabIndex = 1;
-            this.tpEmail.Text = "Facility Maintenance";
-            this.tpEmail.UseVisualStyleBackColor = true;
-            // 
-            // btnRefreshFacSettings
-            // 
-            this.btnRefreshFacSettings.Location = new System.Drawing.Point(6, 23);
-            this.btnRefreshFacSettings.Name = "btnRefreshFacSettings";
-            this.btnRefreshFacSettings.Size = new System.Drawing.Size(53, 23);
-            this.btnRefreshFacSettings.TabIndex = 21;
-            this.btnRefreshFacSettings.Text = "Refresh";
-            this.btnRefreshFacSettings.UseVisualStyleBackColor = true;
-            this.btnRefreshFacSettings.Click += new System.EventHandler(this.btnRefreshFacSettings_Click);
-            // 
-            // lbUpdate
-            // 
-            this.lbUpdate.AutoSize = true;
-            this.lbUpdate.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbUpdate.Location = new System.Drawing.Point(111, 61);
-            this.lbUpdate.Name = "lbUpdate";
-            this.lbUpdate.Size = new System.Drawing.Size(52, 13);
-            this.lbUpdate.TabIndex = 20;
-            this.lbUpdate.Text = "Update ";
-            // 
-            // cbFacNotify
-            // 
-            this.cbFacNotify.FormattingEnabled = true;
-            this.cbFacNotify.Items.AddRange(new object[] {
-            "",
-            "Email",
-            "Fax",
-            "Both"});
-            this.cbFacNotify.Location = new System.Drawing.Point(827, 39);
-            this.cbFacNotify.Name = "cbFacNotify";
-            this.cbFacNotify.Size = new System.Drawing.Size(97, 21);
-            this.cbFacNotify.TabIndex = 19;
-            // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(760, 42);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(61, 13);
-            this.label20.TabIndex = 18;
-            this.label20.Text = "Notify Type";
-            // 
-            // btnAddNew
-            // 
-            this.btnAddNew.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.btnAddNew.Location = new System.Drawing.Point(82, 22);
-            this.btnAddNew.Name = "btnAddNew";
-            this.btnAddNew.Size = new System.Drawing.Size(69, 23);
-            this.btnAddNew.TabIndex = 16;
-            this.btnAddNew.Text = "Add New";
-            this.btnAddNew.UseVisualStyleBackColor = true;
-            this.btnAddNew.Click += new System.EventHandler(this.btnAddNew_Click);
-            // 
-            // btnFacSave
-            // 
-            this.btnFacSave.Location = new System.Drawing.Point(157, 22);
-            this.btnFacSave.Name = "btnFacSave";
-            this.btnFacSave.Size = new System.Drawing.Size(75, 23);
-            this.btnFacSave.TabIndex = 15;
-            this.btnFacSave.Text = "Save";
-            this.btnFacSave.UseVisualStyleBackColor = true;
-            this.btnFacSave.Click += new System.EventHandler(this.btnFacSave_Click);
-            // 
-            // btnCheckGC
-            // 
-            this.btnCheckGC.Location = new System.Drawing.Point(174, 74);
-            this.btnCheckGC.Name = "btnCheckGC";
-            this.btnCheckGC.Size = new System.Drawing.Size(58, 23);
-            this.btnCheckGC.TabIndex = 14;
-            this.btnCheckGC.Text = "Check";
-            this.btnCheckGC.UseVisualStyleBackColor = true;
-            this.btnCheckGC.Click += new System.EventHandler(this.btnCheckGC_Click);
-            // 
-            // label19
-            // 
-            this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(524, 110);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(67, 13);
-            this.label19.TabIndex = 13;
-            this.label19.Text = "User defined";
-            // 
-            // txtFacUser
-            // 
-            this.txtFacUser.Location = new System.Drawing.Point(593, 106);
-            this.txtFacUser.Name = "txtFacUser";
-            this.txtFacUser.Size = new System.Drawing.Size(148, 20);
-            this.txtFacUser.TabIndex = 12;
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(524, 77);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(38, 13);
-            this.label18.TabIndex = 11;
-            this.label18.Text = "Phone";
-            // 
-            // txtFacPhone
-            // 
-            this.txtFacPhone.Location = new System.Drawing.Point(593, 73);
-            this.txtFacPhone.Name = "txtFacPhone";
-            this.txtFacPhone.Size = new System.Drawing.Size(148, 20);
-            this.txtFacPhone.TabIndex = 10;
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(524, 44);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(24, 13);
-            this.label17.TabIndex = 9;
-            this.label17.Text = "Fax";
-            // 
-            // txtFacFax
-            // 
-            this.txtFacFax.Location = new System.Drawing.Point(593, 40);
-            this.txtFacFax.Name = "txtFacFax";
-            this.txtFacFax.Size = new System.Drawing.Size(148, 20);
-            this.txtFacFax.TabIndex = 8;
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(255, 28);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(258, 13);
-            this.label16.TabIndex = 7;
-            this.label16.Text = "Email Addresses (separate address with a semi-colon)\r\n";
-            // 
-            // txtEmailAddresses
-            // 
-            this.txtEmailAddresses.Location = new System.Drawing.Point(253, 48);
-            this.txtEmailAddresses.Multiline = true;
-            this.txtEmailAddresses.Name = "txtEmailAddresses";
-            this.txtEmailAddresses.Size = new System.Drawing.Size(264, 76);
-            this.txtEmailAddresses.TabIndex = 6;
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(40, 80);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(64, 13);
-            this.label15.TabIndex = 5;
-            this.label15.Text = "Group Code";
-            // 
-            // txtFacilityName
-            // 
-            this.txtFacilityName.Location = new System.Drawing.Point(20, 106);
-            this.txtFacilityName.Name = "txtFacilityName";
-            this.txtFacilityName.ReadOnly = true;
-            this.txtFacilityName.Size = new System.Drawing.Size(212, 20);
-            this.txtFacilityName.TabIndex = 4;
-            // 
-            // txtGroupCode
-            // 
-            this.txtGroupCode.Location = new System.Drawing.Point(111, 77);
-            this.txtGroupCode.Name = "txtGroupCode";
-            this.txtGroupCode.ReadOnly = true;
-            this.txtGroupCode.Size = new System.Drawing.Size(56, 20);
-            this.txtGroupCode.TabIndex = 3;
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label14.Location = new System.Drawing.Point(768, 110);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(35, 13);
-            this.label14.TabIndex = 2;
-            this.label14.Text = "Filter";
-            // 
-            // txtFacFilter
-            // 
-            this.txtFacFilter.Location = new System.Drawing.Point(803, 106);
-            this.txtFacFilter.Name = "txtFacFilter";
-            this.txtFacFilter.Size = new System.Drawing.Size(148, 20);
-            this.txtFacFilter.TabIndex = 1;
-            this.txtFacFilter.TextChanged += new System.EventHandler(this.txtFacFilter_TextChanged);
-            // 
-            // gvFac
-            // 
-            this.gvFac.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gvFac.Location = new System.Drawing.Point(20, 136);
-            this.gvFac.Name = "gvFac";
-            this.gvFac.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvFac.Size = new System.Drawing.Size(931, 286);
-            this.gvFac.TabIndex = 0;
-            this.gvFac.RowHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.gvFac_RowHeaderMouseClick);
-            // 
             // lvProcessing
             // 
             this.lvProcessing.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
@@ -1994,8 +2348,25 @@ namespace OfficeAutomation
             ((System.ComponentModel.ISupportInitialize)(this.pbCheck)).EndInit();
             this.tpBilling.ResumeLayout(false);
             this.tpBilling.PerformLayout();
+            this.groupBox13.ResumeLayout(false);
+            this.groupBox13.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvBillingSent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvStaged)).EndInit();
+            this.tpEmail.ResumeLayout(false);
+            this.groupBox9.ResumeLayout(false);
+            this.groupBox11.ResumeLayout(false);
+            this.groupBox11.PerformLayout();
+            this.groupBox12.ResumeLayout(false);
+            this.groupBox12.PerformLayout();
+            this.groupBox10.ResumeLayout(false);
+            this.groupBox10.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.gvRpt)).EndInit();
+            this.groupBox8.ResumeLayout(false);
+            this.groupBox8.PerformLayout();
+            this.groupBox14.ResumeLayout(false);
+            this.groupBox14.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.gvFac)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvFacEmail)).EndInit();
             this.tpSettings.ResumeLayout(false);
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
@@ -2011,9 +2382,6 @@ namespace OfficeAutomation
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            this.tpEmail.ResumeLayout(false);
-            this.tpEmail.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.gvFac)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2081,20 +2449,12 @@ namespace OfficeAutomation
         private System.Windows.Forms.TextBox txtFacFilter;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.TextBox txtFacUser;
-        private System.Windows.Forms.Label label18;
-        private System.Windows.Forms.TextBox txtFacPhone;
-        private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.TextBox txtFacFax;
-        private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.TextBox txtEmailAddresses;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.TextBox txtFacilityName;
         private System.Windows.Forms.TextBox txtGroupCode;
         private System.Windows.Forms.Button btnAddNew;
         private System.Windows.Forms.Button btnFacSave;
         private System.Windows.Forms.Button btnCheckGC;
-        private System.Windows.Forms.ComboBox cbFacNotify;
-        private System.Windows.Forms.Label label20;
         private System.Windows.Forms.Button btnEmailPort;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.TextBox txtEmailPort;
@@ -2189,8 +2549,45 @@ namespace OfficeAutomation
         private System.Windows.Forms.Label label43;
         private System.Windows.Forms.TextBox txtWS_ID;
         private System.Windows.Forms.Button btnRefreshFacSettings;
-        private System.Windows.Forms.Label label45;
         private System.Windows.Forms.Button btnUserGuide;
+        private System.Windows.Forms.DataGridView gvFacEmail;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.TextBox txtFacEmail;
+        private System.Windows.Forms.Button btnAddEmail;
+        private System.Windows.Forms.Button btnUpdateAddresses;
+        private System.Windows.Forms.GroupBox groupBox9;
+        private System.Windows.Forms.DataGridView gvRpt;
+        private System.Windows.Forms.GroupBox groupBox8;
+        private System.Windows.Forms.Button btnRefreshRpt;
+        private System.Windows.Forms.TextBox txtFilterRpt;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.TextBox txtSendRpt;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.TextBox txtDataRpt;
+        private System.Windows.Forms.Button btnAddRpt;
+        private System.Windows.Forms.GroupBox groupBox11;
+        private System.Windows.Forms.GroupBox groupBox12;
+        private System.Windows.Forms.RadioButton rbSend;
+        private System.Windows.Forms.RadioButton rbData;
+        private System.Windows.Forms.GroupBox groupBox10;
+        private System.Windows.Forms.Button btnClear;
+        private System.Windows.Forms.GroupBox groupBox13;
+        private System.Windows.Forms.RadioButton rbFolder;
+        private System.Windows.Forms.RadioButton rbBilling;
+        private System.Windows.Forms.CheckBox cbNotifyOnly;
+        private System.Windows.Forms.Label label45;
+        private System.Windows.Forms.Label label44;
+        private System.Windows.Forms.GroupBox groupBox14;
+        private System.Windows.Forms.RadioButton rbEmailSend;
+        private System.Windows.Forms.RadioButton rbEmailNotify;
+        private System.Windows.Forms.TextBox txtEmailSubject;
+        private System.Windows.Forms.TextBox txtEmailMessage;
+        private System.Windows.Forms.Button btnSaveEmail;
+        private System.Windows.Forms.Button btnUpdateFolder;
+        private System.Windows.Forms.Label label46;
+        private System.Windows.Forms.TextBox txtUpdateFolder;
+        private System.Windows.Forms.Button btnUpdate;
     }
 }
 

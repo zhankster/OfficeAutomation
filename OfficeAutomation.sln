@@ -7,6 +7,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfficeAutomation", "OfficeA
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "OfficeAutomationSetup", "OfficeAutomationSetup\OfficeAutomationSetup.vdproj", "{713761C9-20F9-438A-82CD-F1AF52AF86D8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoUpdate", "AutoUpdate\AutoUpdate.csproj", "{21338774-992F-4E1A-867B-248B513BCD50}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{432A1C74-4BAC-4D8B-A4F4-7B2E6A5F01B9}"
+	ProjectSection(SolutionItems) = preProject
+		AutoUpdate\bin\Release\AutoUpdate.exe = AutoUpdate\bin\Release\AutoUpdate.exe
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +27,10 @@ Global
 		{713761C9-20F9-438A-82CD-F1AF52AF86D8}.Debug|Any CPU.ActiveCfg = Debug
 		{713761C9-20F9-438A-82CD-F1AF52AF86D8}.Release|Any CPU.ActiveCfg = Release
 		{713761C9-20F9-438A-82CD-F1AF52AF86D8}.Release|Any CPU.Build.0 = Release
+		{21338774-992F-4E1A-867B-248B513BCD50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21338774-992F-4E1A-867B-248B513BCD50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21338774-992F-4E1A-867B-248B513BCD50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21338774-992F-4E1A-867B-248B513BCD50}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

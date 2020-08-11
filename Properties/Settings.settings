@@ -45,10 +45,10 @@
       <Value Profile="(Default)">keilad@ihspharmacy.com</Value>
     </Setting>
     <Setting Name="BillingRptFolder" Type="System.String" Scope="User">
-      <Value Profile="(Default)">D:\Dev\FLW\IHS\_Files\Reports\auto\</Value>
+      <Value Profile="(Default)">C:\Notifications\Billing\</Value>
     </Setting>
     <Setting Name="BillingExports" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\Notifications\Billing\</Value>
+      <Value Profile="(Default)">C:\Notifications\Exports\</Value>
     </Setting>
     <Setting Name="download" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:\Files\download\</Value>
@@ -88,6 +88,23 @@
     </Setting>
     <Setting Name="WS_ID" Type="System.String" Scope="User">
       <Value Profile="(Default)">ZWS</Value>
+    </Setting>
+    <Setting Name="SendEmailMessage" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Your Billing Report from IHS Pharmacy is attached</Value>
+    </Setting>
+    <Setting Name="SendEmailSubject" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Your Billing Report is attached</Value>
+    </Setting>
+    <Setting Name="NotifyEmailMessage" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Currently, we are testing a new billing process.  Please disregard the email that was sent out, as it was a false start. 
+
+We currently plan on sending the July Billing on Monday, if all goes well.</Value>
+    </Setting>
+    <Setting Name="NotifyEmailSubject" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Issue with previous Billing Report sent</Value>
+    </Setting>
+    <Setting Name="update" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\\IHSSQL1\Application Setups\IHS Office Automation\update\</Value>
     </Setting>
   </Settings>
 </SettingsFile>

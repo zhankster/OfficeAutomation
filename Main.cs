@@ -16,6 +16,7 @@ using System.Diagnostics;
 using CrystalReportsNinja;
 using System.Security.Cryptography;
 using System.IO;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Net.Mail;
@@ -40,9 +41,11 @@ namespace OfficeAutomation
         private void Main_Load(object sender, EventArgs e)
         {
             gvFac.DataSource = bsFac;
-            cbFacNotify.SelectedIndex = cbFacNotify.FindString("");
+            gvRpt.DataSource = bsRpt;
+            //cbFacNotify.SelectedIndex = cbFacNotify.FindString("");
             dpBilling.Value = DateTime.Now.AddMonths(-1);
-            tabControl1.TabPages.Remove(tpEmail);
+            //tabControl1.TabPages.Remove(tpEmail);
+            GetUpdate();
         }
 
         #region Global Vars
@@ -51,10 +54,13 @@ namespace OfficeAutomation
         private SqlDataAdapter daFac = new SqlDataAdapter();
         private BindingSource bsBill = new BindingSource();
         private SqlDataAdapter daBill = new SqlDataAdapter();
+        private BindingSource bsRpt = new BindingSource();
+        private SqlDataAdapter daRpt = new SqlDataAdapter();
         DataTable dtBilling;
         private BindingSource bsBillSent = new BindingSource();
         private SqlDataAdapter daBillSent = new SqlDataAdapter();
         DataTable dtBillingSent;
+        DataTable dtFacEmail;
         static string CONN_CIPS = "";
         static string CONN_RX = "";
         static string[] Scopes = { CalendarService.Scope.CalendarReadonly };
@@ -63,6 +69,50 @@ namespace OfficeAutomation
         static string outputFolderNew = "";
         string cropImgIn = "";
         string cropImgOut = "";
+        string DATA_RPT = "";
+        string SEND_RPT = "";
+
+        #region SQL for Billing Monthly Report check
+        string BILLING_CS = @"SELECT 
+	            COUNT(MANUAL.ACCT) As CNT
+            FROM
+            CIPS.DBO._ZMANUAL MANUAL 
+	            INNER JOIN  CIPS.DBO.[_zACCOUNT LIST NEW] ACCOUNT_LIST_NEW ON
+                    MANUAL.ACCT  = ACCOUNT_LIST_NEW.ACCOUNT 
+                 LEFT OUTER JOIN  CIPS.DBO._ZSUMMARY_FOR_COVER_SHEET  ASUMMARY_FOR_COVER_SHEET ON
+                    MANUAL.ACCT = ASUMMARY_FOR_COVER_SHEET.ACCT 
+            WHERE
+                (MANUAL.CAGEGORY NOT LIKE 'PAYMENT%' AND
+                MANUAL.CAGEGORY NOT LIKE 'BALANCE FROM QS1%')  AND
+                MANUAL.DESCRIPTION  NOT LIKE 'DIS%' AND
+            DATEPART(M, MANUAL.DATE) = DATEPART(M, DATEADD(M, -1, GETDATE()))
+            AND DATEPART(YYYY, MANUAL.DATE) = DATEPART(YYYY, DATEADD(M, -1, GETDATE()))
+            AND MANUAL.ACCT  LIKE ";
+        string BILLING_CIPS_WS = @"SELECT 
+	            COUNT(FIL.ID)  As CNT
+            FROM CIPS_WHOLESALE.DBO.FIL 
+	            INNER JOIN CIPS_WHOLESALE.DBO.DRG ON
+		            FIL.DRG_ID = DRG.ID
+	            INNER JOIN CIPS_WHOLESALE.DBO.FAC ON
+		            FIL.FAC_ID = FAC.ID
+            WHERE DATEPART(M, FIL.FIL_DATE) = DATEPART(M, DATEADD(M, -1, GETDATE()))
+	            AND DATEPART(YYYY, FIL.FIL_DATE) = DATEPART(YYYY, DATEADD(M, -1, GETDATE()))
+		            AND FIL.QTY_DSP <> 0.00
+		            AND DRG.BILL_FLAG = 'T'
+		            AND FAC.DCODE LIKE ";
+        string BILLING_CIPS = @"SELECT 
+	            COUNT(FIL.ID) As CNT
+            FROM CIPS.dbo.FIL 
+	            INNER JOIN CIPS.dbo.DRG ON
+		            FIL.DRG_ID = DRG.ID
+	            INNER JOIN CIPS.dbo.FAC ON
+		            FIL.FAC_ID = FAC.ID
+            WHERE DATEPART(M, FIL.FIL_DATE) = DATEPART(M, DATEADD(M, -1, GETDATE()))
+	            AND DATEPART(YYYY, FIL.FIL_DATE) = DATEPART(YYYY, DATEADD(M, -1, GETDATE()))
+		            AND FIL.QTY_DSP <> 0.00
+		            AND DRG.BILL_FLAG = 'T'
+		            AND FAC.DCODE LIKE ";
+        #endregion END SQL Billing
 
         List<Facility> facilities = new List<Facility>();
         public struct Fac
@@ -74,7 +124,7 @@ namespace OfficeAutomation
             public string phone { get; set; }
             public string notify_type { get; set; }
         }
-        #endregion
+        #endregion END Global Vars
 
         #region Database Functions
         public Fac GetFacility(string fac_code)
@@ -132,7 +182,21 @@ namespace OfficeAutomation
         {
             try
             {
-                string selectCommand = "SELECT A.DCODE as [Group_Code], F.DNAME as [Facility_Name], A.EMAIL as Email ,A.FAX1 as Fax, A.PHONE1 as Phone, A.NOTIFY_TYPE as Notify_Type, A.USER1 FROM FAC_ALT A LEFT JOIN FAC F ON A.DCODE = F.DCODE  ORDER BY A.DCODE";
+                string selectCommand = @"SELECT 
+		                A.DCODE as [Group_Code]
+                        ,F.DNAME as [Facility_Name]
+                        ,ISNULL(
+                        STUFF((SELECT ';' + ADDRESS + ':' + CAST(Billing as VARCHAR)
+                        FROM
+                        FAC_EMAIL E
+                            WHERE A.DCODE = E.FAC_CODE
+                            FOR XML PATH('')), 1, 1, ''), '') [Email_Addresses]
+                        ,ISNULL(USER1, '') Comments
+                        FROM
+                        RXBackend.dbo.FAC_ALT A 
+                        LEFT JOIN CIPS.dbo.FAC F 
+                            ON A.DCODE = F.DCODE";
+
                 daFac = new SqlDataAdapter(selectCommand, CONN_RX);
 
                 SqlCommandBuilder commandBuilder = new SqlCommandBuilder(daFac);
@@ -155,53 +219,35 @@ namespace OfficeAutomation
 
         public void SaveFaclity()
         {
-            if (txtGroupCode.Text.Trim() == "")
+            if (string.IsNullOrWhiteSpace(txtGroupCode.Text))
             {
                 MessageBox.Show("You must select a Group Code", "No Group Code", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (txtEmailAddresses.Text.Trim() == "")
-            {
-                MessageBox.Show("At least one Email Address must be added", "No Email Address", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-            if (!ValidateEmail(txtEmailAddresses.Text.Trim()))
-            {
-                MessageBox.Show("At least one Email Address is not valid", "Invalid Email Address", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
             var conn = new SqlConnection(CONN_RX);
             conn.Open();
             var sql = "";
             if (btnAddNew.Text == "Add New")
             {
                 sql = "UPDATE [FAC_ALT]";
-                sql += " SET [NOTIFY_TYPE] = '" + cbFacNotify.SelectedItem.ToString() + "'";
-                sql += " ,[EMAIL] ='" + txtEmailAddresses.Text.Replace(" ", "").Trim() + "'";
-                sql += " ,[FAX1] = '" + txtFacFax.Text.Trim() + "'";
-                sql += " ,[PHONE1] = '" + txtFacPhone.Text.Trim() + "'";
-                sql += " ,[USER1] = '" + txtFacUser.Text.Trim() + "'";
+                sql += " SET [USER1] = '" + txtFacUser.Text.Trim() + "'";
                 sql += " WHERE [DCODE] = '" + txtGroupCode.Text.Trim() + "'";
             }
             else
             {
                 sql = @"INSERT INTO [FAC_ALT]
                         ([DCODE]
-                        ,[NOTIFY_TYPE]
-                        ,[EMAIL]
-                        ,[FAX1]
-                        ,[PHONE1]
                         ,[USER1])";
-                sql += " VALUES ('" + txtGroupCode.Text.Trim() + "','" + cbFacNotify.SelectedItem.ToString() + "','";
-                sql += txtEmailAddresses.Text.Replace(" ", "").Trim() + "','" + txtFacFax.Text.Trim() + "','";
-                sql += txtFacPhone.Text.Trim() + "','" + txtFacUser.Text.Trim() + "')";
+                sql += " VALUES ('" + txtGroupCode.Text.Trim();
+                sql += "','" + txtFacUser.Text.Trim() + "')";
             }
             //txtInfo.Text = sql;
             var com = new SqlCommand(sql, conn);
             try
             {
                 com.ExecuteNonQuery();
+                Utility.WriteActivity("Save successful for " + txtFacilityName.Text);
                 MessageBox.Show("Saved...");
             }
             catch (Exception ex)
@@ -214,6 +260,108 @@ namespace OfficeAutomation
                 conn.Close();
                 LoadFacilities();
             }
+        }
+
+        public void SaveReport(string data, string send)
+        {
+            var conn = new SqlConnection(CONN_RX);
+            conn.Open();
+            var sql = "";
+            if (btnAddRpt.Text == "Update")
+            {
+                sql = "UPDATE [FAC_REPORTS]";
+                sql += " SET [FAC_DATA] = '" + txtDataRpt.Text.Trim() + "'";
+                sql += ",[FAC_SEND] = '" + txtSendRpt.Text.Trim() + "'";
+                sql += ",[UPDATED] = GETDATE() ";
+                sql += " WHERE [FAC_DATA] = '" + data + "' AND [FAC_SEND] = '" + send + "'";
+            }
+            else
+            {
+                sql = @"INSERT INTO [FAC_REPORTS]
+                        ([FAC_DATA]
+                        ,[FAC_SEND])";
+                sql += " VALUES ('" + txtDataRpt.Text.Trim();
+                sql += "','" + txtSendRpt.Text.Trim() + "')";
+            }
+
+            var com = new SqlCommand(sql, conn);
+            try
+            {
+                com.ExecuteNonQuery();
+                Utility.WriteActivity("Save successful");
+                MessageBox.Show("Saved...");
+            }
+            catch (Exception ex)
+            {
+                Utility.WriteActivity(ex.Message);
+                MessageBox.Show("Not Saved");
+            }
+            finally
+            {
+                conn.Close();
+                LoadReporting();
+            }
+        }
+
+        public bool Execute_Sql(string sql, string sql_conn)
+        {
+            bool success = false;
+            var conn = new SqlConnection(sql_conn);
+            conn.Open();
+
+            var com = new SqlCommand(sql, conn);
+            try
+            {
+                com.ExecuteNonQuery();
+                success = true;
+            }
+            catch (Exception ex)
+            {
+                Utility.WriteActivity(ex.Message);
+                success = false;
+            }
+            finally
+            {
+                conn.Close();
+            }
+            return success;
+        }
+
+        public void LoadReporting()
+        {
+            try
+            {
+                string selectCommand = @"SELECT 
+                    [FAC_DATA] as [Data_Facility_Code]
+	                ,f.[DNAME] as [Data_Facility_Name]
+                    ,[FAC_SEND] as [Send_Facility_Code]
+	                ,fs.[DNAME] as [Send_Facility_Name]
+	                ,r.[ID]
+                FROM [dbo].[FAC_REPORTS] r
+                LEFT JOIN [CIPS].[dbo].[FAC] f
+	                on r.FAC_DATA = f.DCODE
+                LEFT JOIN [CIPS].[dbo].[FAC] fs
+	                on r.FAC_SEND = fs.DCODE 
+                ORDER BY [FAC_DATA]";
+
+                daRpt = new SqlDataAdapter(selectCommand, CONN_RX);
+
+                SqlCommandBuilder commandBuilder = new SqlCommandBuilder(daRpt);
+
+                System.Data.DataTable table = new DataTable
+                {
+                    Locale = CultureInfo.InvariantCulture
+                };
+
+                daRpt.Fill(table);
+                bsRpt.DataSource = table;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
+            }
+
         }
 
         public void InsertFAC_TRANS(string trans_type, string fac_code, string documents, string email_sent, string notes, string created_by )
@@ -437,6 +585,126 @@ namespace OfficeAutomation
             return true;
         }
 
+        public bool CreateBillingReports()
+        {
+            LoadReporting();
+            string fac_data = "", fac_send = "", data_name = "", send_name = "", r_data = "";
+            var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
+            string output= "Billing Export for " + report_date + "\r\n\r\n";
+            string export_path = prop.BillingExports;
+            string dsn = txtDSN_CIPS.Text;
+            try
+            {
+                for (int i = 0; i + 1 < gvRpt.Rows.Count; i++)
+                {
+                    fac_data = gvRpt.Rows[i].Cells["Data_Facility_Code"].Value.ToString();
+                    fac_send = gvRpt.Rows[i].Cells["Send_Facility_Code"].Value.ToString();
+                    data_name = gvRpt.Rows[i].Cells["Data_Facility_Name"].Value.ToString();
+                    send_name = gvRpt.Rows[i].Cells["Send_Facility_Name"].Value.ToString();
+
+                    string sql = BILLING_CIPS + " '" + fac_data + "%'";
+                    string report = prop.BillingRptFolder + "BILLING_CIPS.rpt";
+                    int r_count = GetRowCount(sql);
+                    dsn = txtDSN_CIPS.Text;
+
+                    if (r_count > 0)
+                    {
+                        ExportBillingReport(report, export_path, "pdf", fac_data, fac_send, dsn);
+                        r_data = "CIPS: " + r_count.ToString() + " record(s) found for '" + fac_data + "'";
+                        output += r_data + "\r\n";
+                        Utility.WriteActivity(r_data);
+                    }
+                    else
+                    {
+                        r_data = "CIPS: " + r_count.ToString() + " records found for '" + fac_data + "'";
+                        output += r_data + "\r\n";
+                        Utility.WriteActivity(r_data);
+                    }
+
+                    sql = BILLING_CS + " '" + fac_data + "%'";
+                    report = prop.BillingRptFolder + "BILLING_CS.rpt";
+                    r_count = GetRowCount(sql);
+                    dsn = txtDSN_CIPS.Text;
+
+                    if (r_count > 0)
+                    {
+                        ExportBillingReport(report, export_path, "pdf", fac_data, "CS_" + fac_send, dsn);
+                        r_data = "Cover Sheet: " + r_count.ToString() + " record(s) found for '" + fac_data + "'";
+                        output += r_data + "\r\n";
+                        Utility.WriteActivity(r_data);
+                    }
+                    else
+                    {
+                        r_data = "Cover Sheet: " + r_count.ToString() + " records found for '" + fac_data + "'";
+                        output += r_data + "\r\n";
+                        Utility.WriteActivity(r_data);
+                    }
+
+                    sql = BILLING_CIPS_WS + " '" + fac_data + "%'";
+                    report = prop.BillingRptFolder + "BILLING_CIPS_WS.rpt";
+                    r_count = GetRowCount(sql);
+                    dsn = txtDSN_WS.Text;
+
+                    if (r_count > 0)
+                    {
+                        ExportBillingReport(report, export_path, "pdf", fac_data, "WS_" + fac_send, dsn);
+                        r_data = "CIPS WS: " + r_count.ToString() + " record(s) found for '" + fac_data + "'";
+                        output += r_data + "\r\n\r\n";
+                        Utility.WriteActivity(r_data);
+                    }
+                    else
+                    {
+                        r_data = "CIPS WS: " + r_count.ToString() + " records found for '" + fac_data + "'";
+                        output += r_data + "\r\n\r\n";
+                        Utility.WriteActivity(r_data);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+            string filename = export_path + report_date + "_Billing.txt";
+            try 
+            {
+                File.WriteAllText(filename, output);
+                Process.Start("notepad.exe", filename);
+            }
+
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            return true;
+        }
+
+        public static int GetRowCount(string sql)
+        {
+            int cnt = 0;
+            using (SqlConnection conn = new SqlConnection(CONN_RX))
+            {
+                SqlCommand command = new SqlCommand(sql, conn);
+                try
+                {
+                    conn.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        cnt = reader.GetInt32(reader.GetOrdinal("CNT"));
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return 0;
+                }
+                return cnt;
+            }
+        }
+
         #endregion
 
         #region Reporting Funcions
@@ -469,6 +737,26 @@ namespace OfficeAutomation
             }
 
             Utility.WriteActivity("Report export transactions complete");
+        }
+
+        public void ExportBillingReport(string report, string export_path, string export_type,  
+            string data, string send, string dsn)
+        {
+            var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
+
+            string[] rpt = { "-S", dsn,
+            "-F", report,
+            "-O", export_path + report_date + "_" + data + "_" + send,
+            "-E", export_type,
+            "-A", "Facility:" + data};
+            //string[] p = { "-A", "Facility:" + data, "-A" };
+
+            //var rpt_data = rpt.Concat(p).ToArray();
+
+            Utility.WriteActivity("Running report: " + report);
+            RunReport(rpt);
+
+            Utility.WriteActivity("Report export transactions complete for " + data);
         }
 
         public void FaxReports(string report, string export_path, string export_type, string[] parms, string dsn)
@@ -805,6 +1093,9 @@ namespace OfficeAutomation
                 txtFrom.Text = prop.fromCrop.X.ToString() + "," + prop.fromCrop.Y.ToString();
                 txtTo.Text = prop.toCrop.X.ToString() + "," + prop.toCrop.Y.ToString();
                 txtDpi.Text = prop.dpi.ToString();
+                txtEmailMessage.Text = prop.SendEmailMessage;
+                txtEmailSubject.Text = prop.SendEmailSubject;
+                txtUpdateFolder.Text = prop.update;
 
                 outputFolder = txtProcessFolder.Text;
                 outputFolderNew = txtRenamedFolder.Text;
@@ -1009,18 +1300,16 @@ namespace OfficeAutomation
         public void ClearFacTextBoxes()
         {
             txtGroupCode.Text = "";
-            txtFacFax.Text = "";
-            txtFacPhone.Text = "";
+            txtFacUser.Text = "";
             txtFacUser.Text = "";
             txtFacilityName.Text = "";
-            txtEmailAddresses.Text = "";
+            txtFacEmail.Text = "";
         }
 
         public bool SendEmail(string msg, string subject, string recip, string from, string from_name, string[] attachments)
         {
             try
             {
-
                 MailMessage mail = new MailMessage();
                 SmtpClient SmtpServer = new SmtpClient(prop.EmailServer);
 
@@ -1032,8 +1321,7 @@ namespace OfficeAutomation
                 }
                 mail.Subject = subject;
                 mail.Body = msg;
-
-                if (attachments.Length > 0)
+                if (attachments != null && attachments.Length > 0)
                 {
                     for (int i = 0; i < attachments.Length; i++)
                     {
@@ -1052,12 +1340,10 @@ namespace OfficeAutomation
                 new System.Net.NetworkCredential(prop.EmailAddress, Decrypt(prop.EmailPassword));
                 SmtpServer.EnableSsl = true;
 
-
                 SmtpServer.Send(mail);
                 SmtpServer.Dispose();
                 mail.Dispose();
                 Utility.WriteActivity("Mail Sent to " + recip);
-
             }
             catch (Exception ex)
             {
@@ -1466,6 +1752,9 @@ namespace OfficeAutomation
         {
             string user = Environment.UserName;  //System.Security.Principal.WindowsIdentity.GetCurrent().Name;
             string notes = dpBilling.Value.ToString("yyyy-MM");
+            string msg = prop.SendEmailMessage;
+            string subject = prop.SendEmailSubject;
+
 
             //Utility.WriteActivity("Code: " + user + code + " Email: " + email + " Docs: " + docs);
             bool sent;
@@ -1476,13 +1765,20 @@ namespace OfficeAutomation
                     documents[i] = txtBillingExports.Text + documents[i];
             }
 
+            if (cbNotifyOnly.Checked)
+            {
+                Array.Clear(documents, 0, documents.Length);
+                documents = null;
+                msg = prop.NotifyEmailMessage;
+                subject = prop.NotifyEmailSubject;
+            }
+
             string[] addresses = email.Trim().Split(';');
             for (int i = 0; i<addresses.Length; i++)
             {
                 if (addresses[i].Trim() != "")
                 {
-                    sent = SendEmail("Your Billing Report from IHS Pharmacy is attached", "Your Billing Report is attached ",
-                        addresses[i].Trim(), "operations@ihspharmacy.com", "IHS Pharmacy", documents);
+                    sent = SendEmail(msg, subject, addresses[i].Trim(), "operations@ihspharmacy.com", "IHS Pharmacy", documents);
                     if (sent)
                     {
                         InsertFAC_TRANS("BILLING_EMAIL", code, docs, addresses[i].Trim(), notes, user);
@@ -1495,7 +1791,67 @@ namespace OfficeAutomation
 
         }
 
-        #endregion Utility Functions
+        public void ClearRpt()
+        {
+            txtDataRpt.Text = "";
+            txtSendRpt.Text = "";
+        }
+
+        public bool GetUpdate()
+        {
+            string update_dir = prop.update;
+            //string update_dir = @"\\192.168.50.202\dev\update\";
+            string app_folder = Application.StartupPath + @"\";
+            string local_file = "", remote_file = "";
+
+            try
+            {
+                FileVersionInfo RemoteFileInfo;
+                FileVersionInfo.GetVersionInfo(Path.Combine(Application.StartupPath, "OfficeAutomation.exe"));
+                FileVersionInfo LocalFileInfo = FileVersionInfo.GetVersionInfo
+                    (Application.StartupPath + "\\OfficeAutomation.exe");
+                local_file = LocalFileInfo.FileVersion;
+
+                if (File.Exists(update_dir + @"OfficeAutomation.exe"))
+                {
+                    FileVersionInfo.GetVersionInfo(Path.Combine(update_dir, "OfficeAutomation.exe"));
+                    RemoteFileInfo = FileVersionInfo.GetVersionInfo
+                        (update_dir + "\\OfficeAutomation.exe");
+                    remote_file = RemoteFileInfo.FileVersion;
+                }
+
+                System.IO.DirectoryInfo dir = new System.IO.DirectoryInfo(update_dir);
+                int count = dir.GetFiles().Length;
+                if (String.Equals(local_file, remote_file) || remote_file == "")
+                {
+                    string msg = "No Update Available";
+                    Utility.WriteActivity(msg);
+                    //MessageBox.Show(msg);
+                }
+                else
+                {
+                    if (MessageBox.Show("An update is available\nDo you want to apply it?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+                    {
+                        return false;
+                    }
+                    Utility.WriteActivity("Update for " + count.ToString() + " file(s)");
+                    ProcessStartInfo startInfo = new ProcessStartInfo();
+                    startInfo.FileName = "AutoUpdate.exe";
+                    startInfo.Arguments = update_dir;
+                    Process.Start(startInfo);
+                }
+            }
+            catch (Exception ex)
+            {
+                Utility.WriteActivity(ex.Message);
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        #endregion --- End Utility Functions
 
         #region Click Events
         private void btnOpen_Click(object sender, EventArgs e)
@@ -1666,6 +2022,11 @@ namespace OfficeAutomation
                         WriteConfig("python", folder);
                         Utility.WriteActivity("Renamed folder updated");
                         break;
+                    case "btnUpdateFolder":
+                        txtUpdateFolder.Text = folder;
+                        WriteConfig("update", folder);
+                        Utility.WriteActivity("Update folder updated");
+                        break;
                 }
             }
             catch (Exception ex)
@@ -1747,7 +2108,18 @@ namespace OfficeAutomation
                     case "btnPasswordAttachment":
                         UpdateSettings("PasswordAttachment", Encrypt(txtPasswordAttachment.Text), "Attachment Email Password changed", false);
                         break;
-
+                    case "btnSaveEmail":
+                        if (rbEmailSend.Checked)
+                        {
+                            UpdateSettings("SendEmailSubject", txtEmailSubject.Text, "Send Email Password changed", false);
+                            UpdateSettings("SendEmailMessage", txtEmailMessage.Text, "Send Email Message changed", false);
+                        }
+                        else
+                        {
+                            UpdateSettings("NotifyEmailSubject", txtEmailSubject.Text, "Notify Email Password changed", false);
+                            UpdateSettings("NotifyEmailMessage", txtEmailMessage.Text, "Notify Email Message changed", false);
+                        }
+                        break;
                 }
 
 
@@ -1778,16 +2150,36 @@ namespace OfficeAutomation
         private void gvFac_RowHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             int rowindex = gvFac.CurrentCell.RowIndex;
-
+            string[] emails;
+            gvFacEmail.DataSource = null;
             try
             {
                 txtGroupCode.Text = gvFac.Rows[rowindex].Cells[0].Value.ToString();
                 txtFacilityName.Text = gvFac.Rows[rowindex].Cells[1].Value.ToString();
-                txtEmailAddresses.Text = gvFac.Rows[rowindex].Cells[2].Value.ToString();
-                txtFacFax.Text = gvFac.Rows[rowindex].Cells[3].Value.ToString();
-                txtFacPhone.Text = gvFac.Rows[rowindex].Cells[4].Value.ToString();
-                txtFacUser.Text = gvFac.Rows[rowindex].Cells[6].Value.ToString();
-                cbFacNotify.SelectedIndex = cbFacNotify.FindString(gvFac.Rows[rowindex].Cells[5].Value.ToString());
+                txtFacUser.Text = gvFac.Rows[rowindex].Cells["Comments"].Value.ToString();
+
+                if (gvFac.Rows[rowindex].Cells[2].Value.ToString().Length > 4)
+                {
+
+                    emails = gvFac.Rows[rowindex].Cells[2].Value.ToString().Split(';');
+
+                    //gvFacEmail.Columns.Add("Address", "Address");
+                    //gvFacEmail.Columns.Add("Use", typeof(bool));
+
+                    dtFacEmail = new DataTable();
+                    dtFacEmail.Columns.Add("Address", typeof(string));
+                    dtFacEmail.Columns.Add("Use", typeof(bool));
+
+                    for (int i = 0; i < emails.Length; i++)
+                    {
+                        var email = emails[i].Split(':');
+                        //gvFacEmail.Rows.Add(new object[] { email[0], email[1].Equals("1")? true: false });
+                        dtFacEmail.Rows.Add(email[0], email[1].Equals("1") ? true : false);
+                    }
+                    gvFacEmail.DataSource = dtFacEmail;
+
+                }
+
             }
             catch (Exception ex)
             {
@@ -1918,46 +2310,52 @@ namespace OfficeAutomation
 
         private void btnExportReports_Click(object sender, EventArgs e)
         {
-            try
+            if (rbBilling.Checked == true)
             {
-                txtReportIssues.Text = "";
-                var folder = prop.BillingRptFolder;
-                var report_date = dpBilling.Value.ToString("yyyy-MM");
-                if (txtAltRptFolder.Text.Trim() != "")
+                CreateBillingReports();
+            }
+            else
+            {
+                try
                 {
-                    folder = txtAltRptFolder.Text;
-                }
-
-                //ExportReport(txtNotifyReport.Text, txtNotifyExports.Text, "pdf", parms, txtDSN_CIPS.Text);
-
-                foreach (string file in Directory.EnumerateFiles(folder, "*.rpt"))
-                {
-                    string contents = file.ToString();
-                    Utility.WriteActivity(contents);
-
-                    string dsn = file.ToString().Contains(txtWS_ID.Text.Trim()) ? txtDSN_WS.Text : txtDSN_CIPS.Text;
-
-                    string[] rpt = { "-S", dsn,
-                "-F", file,
-                "-O", txtBillingExports.Text + report_date + "_" + Path.GetFileNameWithoutExtension(file) + ".pdf",
-                "-E", "pdf"};
-
-                    bool success = RunReport(rpt);
-
-                    if (!success)
+                    txtReportIssues.Text = "";
+                    var folder = prop.BillingRptFolder;
+                    var report_date = dpBilling.Value.ToString("yyyy-MM");
+                    if (txtAltRptFolder.Text.Trim() != "")
                     {
-                        txtReportIssues.Text += file + "\r\n";
+                        folder = txtAltRptFolder.Text;
                     }
 
+                    //ExportReport(txtNotifyReport.Text, txtNotifyExports.Text, "pdf", parms, txtDSN_CIPS.Text);
+
+                    foreach (string file in Directory.EnumerateFiles(folder, "*.rpt"))
+                    {
+                        string contents = file.ToString();
+                        Utility.WriteActivity(contents);
+
+                        string dsn = file.ToString().Contains(txtWS_ID.Text.Trim()) ? txtDSN_WS.Text : txtDSN_CIPS.Text;
+
+                        string[] rpt = { "-S", dsn,
+                    "-F", file,
+                    "-O", txtBillingExports.Text + report_date + "_" + Path.GetFileNameWithoutExtension(file) + ".pdf",
+                    "-E", "pdf"};
+
+                        bool success = RunReport(rpt);
+
+                        if (!success)
+                        {
+                            txtReportIssues.Text += file + "\r\n";
+                        }
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    Utility.WriteActivity(ex.Message);
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                Utility.WriteActivity(ex.Message);
-                return;
-            }
-
         }
 
         //Attachment Processing
@@ -2161,7 +2559,6 @@ namespace OfficeAutomation
                      }
             }
                     
-            //txtPreview.Text = val;
         }
 
         private void gvBillingSent_RowHeaderMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -2190,7 +2587,7 @@ namespace OfficeAutomation
             }
 
             //if (send == "True" && email.Trim().Length > 2 && docs.Trim().Length > 2)
-            if (email.Trim().Length > 2 && docs.Trim().Length > 2)
+            if (email.Trim().Length > 2 && (docs.Trim().Length > 2 || cbNotifyOnly.Checked))
             {
                 SendBillingDocs(code, docs, email);
             }
@@ -2270,8 +2667,25 @@ namespace OfficeAutomation
 
         }
 
+        private void gvRpt_RowHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            int row = e.RowIndex;
+
+            DATA_RPT = gvRpt.Rows[row].Cells["Data_Facility_Code"].Value.ToString();
+            SEND_RPT = gvRpt.Rows[row].Cells["Send_Facility_Code"].Value.ToString();
+            txtDataRpt.Text = DATA_RPT;
+            txtSendRpt.Text = SEND_RPT;
+
+            btnAddRpt.Text = "Update";
+        }
+
         private void btnSendSelected_Click(object sender, EventArgs e)
         {
+            if (MessageBox.Show("Do you want to send emails to the selected facilities?", "Send Email", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+            {
+                return;
+            }
+
             string email, docs, code, send;
             try
             {
@@ -2279,12 +2693,12 @@ namespace OfficeAutomation
                 {
                     foreach (DataGridViewRow row in gvStaged.Rows)
                     {
-                        email = row.Cells["Email"].Value.ToString();
+                        email = row.Cells["Email"].EditedFormattedValue.ToString();
                         docs = row.Cells["Documents"].Value.ToString();
                         code = row.Cells["Code"].Value.ToString();
                         send = row.Cells["Send"].Value.ToString();
 
-                        if (send == "True" && email.Trim().Length > 2 && docs.Trim().Length > 2)
+                        if (send == "True" && email.Trim().Length > 2 && (docs.Trim().Length > 2 || cbNotifyOnly.Checked))
                         {
                             SendBillingDocs(code, docs, email);
                         }
@@ -2424,7 +2838,189 @@ namespace OfficeAutomation
             }
         }
 
-        #endregion
+        private void btnAddEmail_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtGroupCode.Text))
+            {
+                Utility.WriteActivity("A Group Code must be selected before adding an email address");
+                return;
+            }
+
+            if (!ValidateEmail(txtFacEmail.Text.Trim()))
+            {
+                MessageBox.Show("The Email Address entered is not valid", "Invalid Email Address", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var conn = new SqlConnection(CONN_RX);
+            conn.Open();
+
+            var sql = @"INSERT INTO [FAC_EMAIL]
+                        ([FAC_CODE]
+                        ,[ADDRESS]
+                        ,[Billing])";
+                sql += " VALUES ('" + txtGroupCode.Text.Trim();
+                sql += "','" + txtFacEmail.Text.Trim();
+                sql += "', 1 )";
+            var com = new SqlCommand(sql, conn);
+            try
+            {
+                com.ExecuteNonQuery();
+                MessageBox.Show("Saved...");
+            }
+            catch (Exception ex)
+            {
+                Utility.WriteActivity(ex.Message);
+                MessageBox.Show("Not Saved");
+            }
+            finally
+            {
+                conn.Close();
+                ClearFacTextBoxes();
+                LoadFacilities();
+
+                try
+                {
+                    String searchValue = txtGroupCode.Text;
+                    int rowIndex = -1;
+                    foreach (DataGridViewRow row in gvFac.Rows)
+                    {
+                        if (row.Cells[0].Value.ToString().Equals(searchValue))
+                        {
+                            rowIndex = row.Index;
+                            break;
+                        }
+                    }
+
+                    gvFac.CurrentCell = gvFac.Rows[rowIndex].Cells[0];
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
+        private void btnUpdateAddresses_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(txtGroupCode.Text) || gvFacEmail.Rows.Count < 1 )
+            {
+                Utility.WriteActivity("A Group Code with email addresses must be selected before updating");
+                return;
+            }
+            var code = txtGroupCode.Text;
+            string address = "", use="";
+            var conn = new SqlConnection(CONN_RX);
+            conn.Open();
+
+            foreach (DataGridViewRow row in gvFacEmail.Rows)
+            {
+                address = row.Cells["Address"].Value.ToString();
+                use = row.Cells["Use"].Value.ToString();
+                use = use == "True" ? "1" : "0";
+
+                var sql = "UPDATE [FAC_EMAIL] SET [Billing] = " + use;
+                sql += " WHERE [FAC_CODE]= '" + code + "' AND [ADDRESS]= '" + address + "'";
+
+                var com = new SqlCommand(sql, conn);
+                try
+                {
+                    use = use == "1" ? "True" : "False";
+                    com.ExecuteNonQuery();
+                    Utility.WriteActivity("Setting for " + address + " saved as " + use);
+                }
+                catch (Exception ex)
+                {
+                    Utility.WriteActivity(ex.Message);
+                    MessageBox.Show("Not Saved");
+                }
+                finally
+                {
+
+                }
+            }
+            conn.Close();
+            LoadFacilities();
+        }
+
+        private void btnRefreshRpt_Click(object sender, EventArgs e)
+        {
+            LoadReporting();
+            ClearRpt();
+        }
+
+        private void btnAddRpt_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtDataRpt.Text) || string.IsNullOrWhiteSpace(txtSendRpt.Text))
+            {
+                MessageBox.Show("You must have a Group Code for data and sending", "No Group Codes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            SaveReport(DATA_RPT, SEND_RPT);
+            ClearRpt();
+        }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            ClearRpt();
+            btnAddRpt.Text = "Add";
+        }
+
+        private void gvRpt_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                ContextMenu mRpt = new ContextMenu();
+                string fac_data = "", fac_send = "", data_name = "", send_name = "", id = "";
+
+                int currentMouseOverRow = gvRpt.HitTest(e.X, e.Y).RowIndex;
+
+                if (currentMouseOverRow >= 0)
+                {
+                    fac_send = gvRpt.Rows[currentMouseOverRow].Cells["Send_Facility_Code"].Value.ToString();
+                    fac_data = gvRpt.Rows[currentMouseOverRow].Cells["Data_Facility_Code"].Value.ToString();
+                    data_name = gvRpt.Rows[currentMouseOverRow].Cells["Data_Facility_Name"].Value.ToString();
+                    send_name = gvRpt.Rows[currentMouseOverRow].Cells["Send_Facility_Name"].Value.ToString();
+                    id = gvRpt.Rows[currentMouseOverRow].Cells["ID"].Value.ToString();
+                }
+
+                mRpt.MenuItems.Add(new MenuItem("Copy Row", (o, ev) =>
+                {
+                    //MessageBox.Show((o as MenuItem).Text);
+                    Clipboard.SetText(fac_data + ", " + data_name + ", " + fac_send + ", " + send_name);
+                }));
+
+                mRpt.MenuItems.Add(new MenuItem("Delete", (o, ev) =>
+                {
+                    string msg = "Data Facility: " + fac_data
+                    + data_name + ", Send Facility: " + fac_send + ", " + send_name;
+                    DialogResult result = MessageBox.Show("Do you want to delete the record [" + msg + "]?",
+                    "Delete record", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (result == DialogResult.Yes)
+                    {
+                        string sql = "DELETE FROM FAC_REPORTS WHERE ID =" + id;
+                        bool success = Execute_Sql(sql, CONN_RX);
+                        if (success)
+                            LoadReporting();
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }));
+
+                mRpt.Show(gvRpt, new Point(e.X, e.Y));
+
+            }
+        }
+
+        private void btnUpdate_Click(object sender, EventArgs e)
+        {
+            GetUpdate();
+        }
+
+        #endregion --- End Click
 
         #region Change Events
         private void txtFacFilter_TextChanged(object sender, EventArgs e)
@@ -2433,7 +3029,7 @@ namespace OfficeAutomation
             {
                 var bd = (BindingSource)gvFac.DataSource;
                 var dt = (DataTable)bd.DataSource;
-                dt.DefaultView.RowFilter = string.Format("Facility_Name like '%{0}%'", txtFacFilter.Text.Trim().Replace("'", "''"));
+                dt.DefaultView.RowFilter = string.Format("Group_Code like '%{0}%'", txtFacFilter.Text.Trim().Replace("'", "''"));
                 gvFac.Refresh();
             }
             catch (Exception ex)
@@ -2491,11 +3087,41 @@ namespace OfficeAutomation
             gvBillingSent.DataSource = bs;
         }
 
+        private void txtFilterRpt_TextChanged(object sender, EventArgs e)
+        {
+            string search = rbSend.Checked ? "Send_Facility_Code" : "Data_Facility_Code";
+
+            try
+            {
+                var bd = (BindingSource)gvRpt.DataSource;
+                var dt = (DataTable)bd.DataSource;
+                dt.DefaultView.RowFilter = string.Format(search + " like '%{0}%'", txtFilterRpt.Text.Trim().Replace("'", "''"));
+                gvRpt.Refresh();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void rbEmailSend_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbEmailSend.Checked)
+            {
+                txtEmailMessage.Text = prop.SendEmailMessage;
+                txtEmailSubject.Text = prop.SendEmailSubject;
+            }
+            else
+            {
+                txtEmailMessage.Text = prop.NotifyEmailMessage;
+                txtEmailSubject.Text = prop.NotifyEmailSubject;
+            }
+
+        }
 
 
 
         #endregion
-
 
     }
 }

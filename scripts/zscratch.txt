@@ -1,0 +1,7 @@
+﻿SELECT A.DCODE as [Group_Code], F.DNAME as [Facility_Name], A.EMAIL as Email ,A.FAX1 as Fax, A.PHONE1 as Phone, 
+A.NOTIFY_TYPE as Notify_Type, A.USER1 FROM FAC_ALT A LEFT JOIN FAC F ON A.DCODE = F.DCODE  ORDER BY A.DCODE
+
+                txtFacFax.Text = gvFac.Rows[rowindex].Cells[3].Value.ToString();
+                txtFacPhone.Text = gvFac.Rows[rowindex].Cells[4].Value.ToString();
+                txtFacUser.Text = gvFac.Rows[rowindex].Cells[6].Value.ToString();
+                cbFacNotify.SelectedIndex = cbFacNotify.FindString(gvFac.Rows[rowindex].Cells[5].Value.ToString());

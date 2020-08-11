@@ -12,7 +12,7 @@ namespace OfficeAutomation.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.5.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.6.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -193,7 +193,7 @@ namespace OfficeAutomation.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Dev\\FLW\\IHS\\_Files\\Reports\\auto\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Notifications\\Billing\\")]
         public string BillingRptFolder {
             get {
                 return ((string)(this["BillingRptFolder"]));
@@ -205,7 +205,7 @@ namespace OfficeAutomation.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Notifications\\Billing\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Notifications\\Exports\\")]
         public string BillingExports {
             get {
                 return ((string)(this["BillingExports"]));
@@ -368,6 +368,68 @@ namespace OfficeAutomation.Properties {
             }
             set {
                 this["WS_ID"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Your Billing Report from IHS Pharmacy is attached")]
+        public string SendEmailMessage {
+            get {
+                return ((string)(this["SendEmailMessage"]));
+            }
+            set {
+                this["SendEmailMessage"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Your Billing Report is attached")]
+        public string SendEmailSubject {
+            get {
+                return ((string)(this["SendEmailSubject"]));
+            }
+            set {
+                this["SendEmailSubject"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Currently, we are testing a new billing process.  Please disregard the email that" +
+            " was sent out, as it was a false start. \r\n\r\nWe currently plan on sending the Jul" +
+            "y Billing on Monday, if all goes well.")]
+        public string NotifyEmailMessage {
+            get {
+                return ((string)(this["NotifyEmailMessage"]));
+            }
+            set {
+                this["NotifyEmailMessage"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Issue with previous Billing Report sent")]
+        public string NotifyEmailSubject {
+            get {
+                return ((string)(this["NotifyEmailSubject"]));
+            }
+            set {
+                this["NotifyEmailSubject"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("\\\\IHSSQL1\\Application Setups\\IHS Office Automation\\update\\")]
+        public string update {
+            get {
+                return ((string)(this["update"]));
+            }
+            set {
+                this["update"] = value;
             }
         }
     }
