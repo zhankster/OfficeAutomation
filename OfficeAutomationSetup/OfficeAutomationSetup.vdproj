@@ -231,6 +231,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_7D340AE5C3D84B41B0450C27559E7B88"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_9191926E737A50D776AE49A736C2E837"
         "OwnerKey" = "8:_A1AC0F4697ED18E625F1C0FE9707D90F"
         "MsmSig" = "8:_UNDEFINED"
@@ -574,12 +580,6 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_7BA6EFA1F1924FAAAD5114C47771C49B"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_EB44305C08C603A0B34B1BFCD1A9F72E"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -617,6 +617,12 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_9191926E737A50D776AE49A736C2E837"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_7BA6EFA1F1924FAAAD5114C47771C49B"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1334,6 +1340,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7D340AE5C3D84B41B0450C27559E7B88"
+            {
+            "SourcePath" = "8:..\\images\\ihs-pharmacy-logo.png"
+            "TargetName" = "8:ihs-pharmacy-logo.png"
+            "Tag" = "8:"
+            "Folder" = "8:_D2E4DB0F12E2495E9764D91D14DB9479"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_9191926E737A50D776AE49A736C2E837"
             {
             "AssemblyRegister" = "3:1"
@@ -1846,6 +1872,17 @@
                         {
                         }
                     }
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_D2E4DB0F12E2495E9764D91D14DB9479"
+                    {
+                    "Name" = "8:images"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_1CE62365899C41B1AAC8C5905FC6CA4A"
+                        "Folders"
+                        {
+                        }
+                    }
                 }
             }
             "{1525181F-901A-416C-8A58-119130FE478E}:_929395DF4D94414A94CE5D5438BBA68F"
@@ -1887,7 +1924,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Office Automation"
         "ProductCode" = "8:{473F2683-F0E2-4A14-B705-E937F8D32E02}"
-        "PackageCode" = "8:{39467D37-82CC-4E0E-B53B-78635D135A59}"
+        "PackageCode" = "8:{771E4AE6-863C-4FBD-A10E-E76D0E20D3DF}"
         "UpgradeCode" = "8:{077DDAAE-1703-4949-AC59-519AE67183A2}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"

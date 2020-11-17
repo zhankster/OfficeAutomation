@@ -16,7 +16,6 @@ using System.Diagnostics;
 using CrystalReportsNinja;
 using System.Security.Cryptography;
 using System.IO;
-using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Net.Mail;
@@ -26,6 +25,8 @@ using DataTable = System.Data.DataTable;
 using System.Drawing.Imaging;
 using Ghostscript.NET.Rasterizer;
 using ImageMagick;
+using OfficeAutomation.Resource;
+using Microsoft.Office.Interop;
 
 namespace OfficeAutomation
 {
@@ -42,13 +43,51 @@ namespace OfficeAutomation
         {
             gvFac.DataSource = bsFac;
             gvRpt.DataSource = bsRpt;
-            //cbFacNotify.SelectedIndex = cbFacNotify.FindString("");
+            gvAccList.DataSource = bsAcc;
+            gvCodes.DataSource = bsCodes;
+            gvMC.DataSource = bsMC;
             dpBilling.Value = DateTime.Now.AddMonths(-1);
-            //tabControl1.TabPages.Remove(tpEmail);
+            dpMC_Export.Value = DateTime.Now.AddMonths(-1);
             GetUpdate();
+            GetRoles(userName);
+
+            foreach (var item in roles)
+            {
+                Utility.WriteActivity("Role Included: " + item);
+            }
+
+
+            if (roles.Count < 1)
+            {
+                tabControl1.TabPages.Remove(tpManualCharges);
+                MessageBox.Show("Your Windows user account must be setup for this application", "User Not Setup");
+                //Application.Exit();
+            }
+
+            if (!roles.Contains("Administrator") && !roles.Contains("Billing"))
+            {
+                tabControl1.TabPages.Remove(tpBilling);
+                tabControl1.TabPages.Remove(tpEmail);
+                tabControl1.TabPages.Remove(tpAttach);
+                tabControl1.TabPages.Remove(tpAccountList);
+                gbMC_Import.Visible = false;
+                btnBulkEdit.Visible = false;
+            }
+
+            if (!roles.Contains("Administrator") && !roles.Contains("Billing") && !roles.Contains("BillTech"))
+            {
+                tabControl1.TabPages.Remove(tpFac);
+            }
+
+            if (!roles.Contains("Administrator") && !roles.Contains("Billing") && !roles.Contains("PharmTech"))
+            {
+                tabControl1.TabPages.Remove(tpManualCharges);
+            }
+
         }
 
         #region Global Vars
+        readonly string userName = Environment.UserName;
         OfficeAutomation.Properties.Settings prop = OfficeAutomation.Properties.Settings.Default;
         private BindingSource bsFac = new BindingSource();
         private SqlDataAdapter daFac = new SqlDataAdapter();
@@ -56,11 +95,18 @@ namespace OfficeAutomation
         private SqlDataAdapter daBill = new SqlDataAdapter();
         private BindingSource bsRpt = new BindingSource();
         private SqlDataAdapter daRpt = new SqlDataAdapter();
+        private BindingSource bsAcc = new BindingSource();
+        private SqlDataAdapter daAcc = new SqlDataAdapter();
+        private BindingSource bsCodes = new BindingSource();
+        private SqlDataAdapter daCodes = new SqlDataAdapter();
+        private BindingSource bsMC = new BindingSource();
+        private SqlDataAdapter daMC = new SqlDataAdapter();
         DataTable dtBilling;
         private BindingSource bsBillSent = new BindingSource();
         private SqlDataAdapter daBillSent = new SqlDataAdapter();
         DataTable dtBillingSent;
         DataTable dtFacEmail;
+        BindingSource bsStates = new BindingSource();
         static string CONN_CIPS = "";
         static string CONN_RX = "";
         static string[] Scopes = { CalendarService.Scope.CalendarReadonly };
@@ -71,23 +117,29 @@ namespace OfficeAutomation
         string cropImgOut = "";
         string DATA_RPT = "";
         string SEND_RPT = "";
+        bool DataSet = false;
+        bool AccInsert = true;
+        string MC_ID = "";
+        string Acc_ID = "";
+        string Code_ID = "";
+        List<string> roles = new List<string>();
 
         #region SQL for Billing Monthly Report check
         string BILLING_CS = @"SELECT 
-	            COUNT(MANUAL.ACCT) As CNT
+	            COUNT(MANUAL_CHARGES.ACCT) As CNT
             FROM
-            CIPS.DBO._ZMANUAL MANUAL 
-	            INNER JOIN  CIPS.DBO.[_zACCOUNT LIST NEW] ACCOUNT_LIST_NEW ON
-                    MANUAL.ACCT  = ACCOUNT_LIST_NEW.ACCOUNT 
-                 LEFT OUTER JOIN  CIPS.DBO._ZSUMMARY_FOR_COVER_SHEET  ASUMMARY_FOR_COVER_SHEET ON
-                    MANUAL.ACCT = ASUMMARY_FOR_COVER_SHEET.ACCT 
+            CIPS.DBO.MANUAL_CHARGES 
+	            INNER JOIN  CIPS.DBO.ACCOUNT_LIST ON
+                    MANUAL_CHARGES.ACCT  = ACCOUNT_LIST.ACCOUNT 
+                 LEFT OUTER JOIN CIPS.DBO.SUMMARY_CS ON
+                    MANUAL_CHARGES.ACCT = SUMMARY_CS.ACCT 
             WHERE
-                (MANUAL.CAGEGORY NOT LIKE 'PAYMENT%' AND
-                MANUAL.CAGEGORY NOT LIKE 'BALANCE FROM QS1%')  AND
-                MANUAL.DESCRIPTION  NOT LIKE 'DIS%' AND
-            DATEPART(M, MANUAL.DATE) = DATEPART(M, DATEADD(M, -1, GETDATE()))
-            AND DATEPART(YYYY, MANUAL.DATE) = DATEPART(YYYY, DATEADD(M, -1, GETDATE()))
-            AND MANUAL.ACCT  LIKE ";
+                (MANUAL_CHARGES.CAGEGORY NOT LIKE 'PAYMENT%' AND
+                MANUAL_CHARGES.CAGEGORY NOT LIKE 'BALANCE FROM QS1%')  AND
+                MANUAL_CHARGES.DESCRIPTION  NOT LIKE 'DIS%' AND
+            DATEPART(M, MANUAL_CHARGES.DATE) = DATEPART(M, DATEADD(M, -1, GETDATE()))
+            AND DATEPART(YYYY, MANUAL_CHARGES.DATE) = DATEPART(YYYY, DATEADD(M, -1, GETDATE()))
+            AND MANUAL_CHARGES.ACCT  LIKE ";
         string BILLING_CIPS_WS = @"SELECT 
 	            COUNT(FIL.ID)  As CNT
             FROM CIPS_WHOLESALE.DBO.FIL 
@@ -127,6 +179,212 @@ namespace OfficeAutomation
         #endregion END Global Vars
 
         #region Database Functions
+        public bool GetRoles(string username)
+        {
+            using (SqlConnection conn = new SqlConnection(CONN_RX))
+            {
+                string sql = @"SELECT U.USERNAME, R.DESCRIPTION FROM RPT_USERS U 
+                    INNER JOIN RPT_USER_ROLE T ON U.ID = T.USER_ID
+                    INNER JOIN RPT_ROLES R ON T.ROLE_ID = R.ID
+                    WHERE U.USERNAME = @user";
+                SqlCommand command = new SqlCommand(sql, conn);
+                command.Parameters.AddWithValue("@user", username);
+
+                try
+                {
+                    conn.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        roles.Add(reader["DESCRIPTION"].ToString());
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return false;
+                }
+
+            }
+            return true;
+        }
+
+        public bool ExportManualCharges()
+        {
+            DateTime dt = dpMC_Export.Value;
+            int year = dt.Year;
+            int month = dt.Month;
+            int last_day = DateTime.DaysInMonth(year, month);
+            string bill_month = year.ToString() + "-" + month.ToString() + "-" + last_day.ToString();
+            string monthName = dpMC_Export.Value.ToString("MMMM", CultureInfo.InvariantCulture);
+            Utility.WriteActivity(monthName);
+            string sql_suffix = "GROUP BY [ACCT] ORDER BY [ACCT]";
+            string sql_suffix_detail = " ORDER BY [DATE]";
+            var csv = new StringBuilder();
+            Utility.WriteActivity(month.ToString() + "/" + year.ToString());
+            string exp_type = "";
+            try
+            {
+                exp_type = ddMC_Export.SelectedItem.ToString();
+            }
+            catch 
+            {
+            }
+
+            if (exp_type == "")
+            {
+                return false;
+            }
+
+            string sql = "", category_label = "" ;
+
+            string sql_manual = "SELECT [ACCT],'" + bill_month + "' as [DATE], SUM([PRICE]) [PRICE] FROM MANUAL_CHARGES  WHERE ";
+            sql_manual += " DATEPART(month, [DATE]) = " + month.ToString() + " and DATEPART(year, [DATE])=" + year.ToString();
+
+            string sql_detail = "SELECT ACCT, [DATE], CATEGORY, DESCRIPTION, QTY, PRICE  FROM MANUAL_CHARGES  WHERE ";
+            sql_detail += " DATEPART(month, [DATE]) = " + month.ToString() + " and DATEPART(year, [DATE])=" + year.ToString();
+
+            string sql_cips = "SELECT CHG.DCODE [ACCT],'" + bill_month + "' as [DATE],";
+                   sql_cips += @"SUM(FIL.COPAY_PRICE) - SUM(ISNULL(RTN.CREDIT, 0)) as PRICE
+                            FROM
+	                            CIPS.dbo.FIL FIL INNER JOIN CIPS.dbo.PAT PAT ON
+                                    FIL.PAT_ID = PAT.ID
+                                 INNER JOIN CIPS.dbo.FAC FAC ON
+                                    FIL.FAC_ID = FAC.ID
+                                 INNER JOIN CIPS.dbo.DRG DRG ON
+                                    FIL.DRG_ID = DRG.ID
+                                 LEFT OUTER JOIN CIPS.dbo.RTN RTN ON
+                                    FIL.ID = RTN.FIL_ID
+                                 LEFT OUTER JOIN CIPS.dbo.CHG CHG ON
+                                    FIL.CHG_ID = CHG.ID
+                            WHERE
+                                FIL.QTY_DSP <> 0 AND";
+            sql_cips += "( DATEPART(month, [FIL_DATE]) = " + month.ToString() + " and DATEPART(year, [FIL_DATE])=" + year.ToString()+ ") ";
+            sql_cips += @"AND FIL.STATUS <> 'V'
+                            GROUP BY CHG.DCODE
+                            ORDER BY CHG.DCODE";
+
+            string sql_cips_wh = "SELECT CHG.DCODE [ACCT],'" + bill_month + "' as [DATE],";
+                   sql_cips_wh += @"SUM(FIL.COPAY_PRICE) - SUM(ISNULL(RTN.CREDIT, 0)) as PRICE
+                            FROM
+	                            CIPS_WHOLESALE.dbo.FIL FIL INNER JOIN CIPS_WHOLESALE.dbo.PAT PAT ON
+                                    FIL.PAT_ID = PAT.ID
+                                 INNER JOIN CIPS_WHOLESALE.dbo.FAC FAC ON
+                                    FIL.FAC_ID = FAC.ID
+                                 INNER JOIN CIPS_WHOLESALE.dbo.DRG DRG ON
+                                    FIL.DRG_ID = DRG.ID
+                                 LEFT OUTER JOIN CIPS_WHOLESALE.dbo.RTN RTN ON
+                                    FIL.ID = RTN.FIL_ID
+                                 LEFT OUTER JOIN CIPS_WHOLESALE.dbo.CHG CHG ON
+                                    FIL.CHG_ID = CHG.ID
+                            WHERE
+                                FIL.QTY_DSP <> 0 AND";
+            sql_cips_wh += "( DATEPART(month, [FIL_DATE]) = " + month.ToString() + " and  DATEPART(year, [FIL_DATE])=" + year.ToString() + ") ";
+            sql_cips_wh += @"AND FIL.STATUS <> 'V'
+                            GROUP BY CHG.DCODE
+                            ORDER BY CHG.DCODE";
+
+            Clipboard.SetText(sql_cips + " \n " + sql_cips_wh);
+
+            using (SqlConnection conn = new SqlConnection(CONN_RX))
+            {
+                switch (exp_type.Trim())
+                {
+                    case "Jail Stock":
+                        sql = sql_manual + " AND CATEGORY LIKE '%Stock%' " + sql_suffix;
+                        category_label = "Stock";
+                        break;
+                    case "Local Pharmacy":
+                        sql = sql_manual + " AND CATEGORY LIKE '%Local Pharmacy%' " + sql_suffix;
+                        category_label = "Local Pharmacy";
+                        break;
+                    case "Jail Stock (details)":
+                        sql = sql_detail + " AND CATEGORY LIKE '%Stock%' " + sql_suffix_detail;
+                        category_label = "Stock (details)";
+                        break;
+                    case "Local Pharmacy (details)":
+                        sql = sql_detail + " AND CATEGORY LIKE '%Local Pharmacy%' " + sql_suffix_detail;
+                        category_label = "Local Pharmacy (details)";
+                        break;
+                    case "Wholesale":
+                        sql = sql_cips_wh;
+                        category_label = "Wholesale";
+                        break;
+                    case "CIPS":
+                        sql = sql_cips;
+                        category_label = "Reg Meds";
+                        break;
+                }
+
+                SqlCommand command = new SqlCommand(sql, conn);
+
+                try
+                {
+                    conn.Open();
+                    SqlDataReader dr = command.ExecuteReader();
+                    if (category_label == "Stock (details)" || category_label == "Local Pharmacy (details)")
+                    {
+                        csv.AppendLine("ACCT,DATE,CATEGORY,DESCRIPTION,QTY,PRICE");
+                    }
+                    else
+                    {
+                        csv.AppendLine("Acct,Date,Description,Price,Inv #");
+                    }
+                    while (dr.Read())
+                    {
+                        var acct = dr["ACCT"].ToString();
+                        var date = DateTime.Parse(dr["DATE"].ToString()).ToShortDateString();
+                        var price = dr["PRICE"].ToString();
+
+                        string category_detail = "", description = "", qty = "";
+                        if (category_label == "Stock (details)" || category_label == "Local Pharmacy (details)")
+                        {
+                            category_detail = dr["CATEGORY"].ToString();
+                            description = dr["DESCRIPTION"].ToString();
+                            qty = dr["QTY"].ToString();
+                        }
+ 
+                        var category = category_label + " " + month.ToString() + "/" + year.ToString();
+                        if (exp_type.Trim() == "CIPS")
+                        {
+                            category = monthName + " " + year.ToString() + " " + category_label;
+                        }
+
+                        var newLine = string.Format("{0},{1},{2},{3},", acct, date, category, price);
+                        if (category_label == "Stock (details)" || category_label == "Local Pharmacy (details)")
+                        {
+                            newLine = string.Format("{0},{1},{2},{3},{4},{5}", acct, date, category_detail, description.Replace(","," "), qty, price);
+                        }
+                        csv.AppendLine(newLine);
+                    }
+                    dr.Close();
+
+                    SaveFileDialog sfd = new SaveFileDialog();
+                    sfd.Filter = "CSV files (*.csv)|*.csv";
+                    //File.WriteAllText(@"C:\Temp\test.csv", csv.ToString());
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        File.WriteAllText(sfd.FileName, csv.ToString());
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    Utility.WriteActivity("Export file for '" + exp_type + "' created at " + sfd.FileName);
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return false;
+                }
+
+            }
+            return true;
+        }
+
         public Fac GetFacility(string fac_code)
         {
             Fac fac = new Fac
@@ -208,6 +466,64 @@ namespace OfficeAutomation
 
                 daFac.Fill(table);
                 bsFac.DataSource = table;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
+            }
+
+        }
+
+        public void LoadAccounts()
+        {
+            try
+            {
+                string selectCommand = @"SELECT * FROM ACCOUNT_LIST";
+
+                daAcc = new SqlDataAdapter(selectCommand, CONN_RX);
+
+                SqlCommandBuilder commandBuilder = new SqlCommandBuilder(daFac);
+
+                System.Data.DataTable table = new DataTable
+                {
+                    Locale = CultureInfo.InvariantCulture
+                };
+
+                daAcc.Fill(table);
+                bsAcc.DataSource = table;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
+            }
+
+        }
+
+        public void LoadManualCharges()
+        {
+            try
+            {
+                DateTime dt = dpMC_Trans.Value;
+                int year = dt.Year;
+                int month = dt.Month;
+                Utility.WriteActivity(month.ToString() + "/" + year.ToString());
+
+                string selectCommand = "SELECT * FROM MANUAL_CHARGES  where";
+                selectCommand += " DATEPART(month, [DATE]) = " + month.ToString() + " and DATEPART(year, [DATE]) = " + year.ToString();
+
+                daMC = new SqlDataAdapter(selectCommand, CONN_RX);
+
+                SqlCommandBuilder commandBuilder = new SqlCommandBuilder(daMC);
+
+                System.Data.DataTable table = new DataTable
+                {
+                    Locale = CultureInfo.InvariantCulture
+                };
+
+                daMC.Fill(table);
+                bsMC.DataSource = table;
             }
             catch (Exception ex)
             {
@@ -303,6 +619,46 @@ namespace OfficeAutomation
             }
         }
 
+        public void SaveCode()
+        {
+            var conn = new SqlConnection(CONN_RX);
+            conn.Open();
+            var sql = "";
+            if (btnAddCode.Text == "Update")
+            {
+                sql = "UPDATE [BILLING_CODES]";
+                sql += " SET [CATEGORY] = '" + ddBilling_Codes.SelectedValue.ToString() + "'";
+                sql += ",[DESCRIPTION] = '" + txtBilling_Code.Text.Trim() + "'";
+                sql += " WHERE [ID] = " + Code_ID;
+            }
+            else
+            {
+                sql = @"INSERT INTO [dbo].[BILLING_CODES]
+                       ([CATEGORY]
+                       ,[DESCRIPTION])";
+                sql += " VALUES ('" + ddBilling_Codes.SelectedValue.ToString();
+                sql += "','" + txtBilling_Code.Text.Trim() + "')";
+            }
+
+            var com = new SqlCommand(sql, conn);
+            try
+            {
+                com.ExecuteNonQuery();
+                Utility.WriteActivity("Save successful");
+                MessageBox.Show("Saved...");
+            }
+            catch (Exception ex)
+            {
+                Utility.WriteActivity(ex.Message);
+                MessageBox.Show("Not Saved");
+            }
+            finally
+            {
+                conn.Close();
+                LoadCodes();
+            }
+        }
+
         public bool Execute_Sql(string sql, string sql_conn)
         {
             bool success = false;
@@ -364,7 +720,33 @@ namespace OfficeAutomation
 
         }
 
-        public void InsertFAC_TRANS(string trans_type, string fac_code, string documents, string email_sent, string notes, string created_by )
+        public void LoadCodes()
+        {
+            try
+            {
+                string selectCommand = @"SELECT * FROM BILLING_CODES";
+
+                daCodes = new SqlDataAdapter(selectCommand, CONN_RX);
+
+                SqlCommandBuilder commandBuilder = new SqlCommandBuilder(daCodes);
+
+                System.Data.DataTable table = new DataTable
+                {
+                    Locale = CultureInfo.InvariantCulture
+                };
+
+                daCodes.Fill(table);
+                bsCodes.DataSource = table;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
+            }
+
+        }
+
+        public void InsertFAC_TRANS(string trans_type, string fac_code, string documents, string email_sent, string notes, string created_by)
         {
             var conn = new SqlConnection(CONN_RX);
             conn.Open();
@@ -377,9 +759,9 @@ namespace OfficeAutomation
                         ,[EMAIL_SENT]
                         ,[NOTES]
                         ,[CREATED_BY])";
-                sql += " VALUES (GETDATE(),'" + trans_type + "','" + fac_code + "','";
-                sql += documents  + "','" + email_sent + "','" + notes + "','";
-                sql += created_by + "')";
+            sql += " VALUES (GETDATE(),'" + trans_type + "','" + fac_code + "','";
+            sql += documents + "','" + email_sent + "','" + notes + "','";
+            sql += created_by + "')";
 
             var com = new SqlCommand(sql, conn);
             try
@@ -472,7 +854,7 @@ namespace OfficeAutomation
             string sql = @"SELECT 
                     CAST(0 as BIT) Send
                     ,A.DCODE as Code
-                    ,F.DNAME as Facility
+                    ,ISNULL(F.DNAME, '') as Facility
                     ,ISNULL(
 			         STUFF((SELECT 
 						';' +
@@ -506,6 +888,7 @@ namespace OfficeAutomation
 	                SELECT TOP 1 NOTES FROM FAC_TRANS T 
 	                WHERE T.FAC_CODE = A.DCODE";
             sql += " AND NOTES = '" + notes + "') O ORDER BY A.DCODE";
+            Clipboard.SetText(sql);
 
             try
             {
@@ -531,13 +914,13 @@ namespace OfficeAutomation
                 Utility.WriteActivity(ex.Message);
             }
 
-            UpdateBillingDatatable(dtBilling);            
+            UpdateBillingDatatable(dtBilling);
 
             return true;
         }
 
         public bool GetSentBIlling()
-        {           
+        {
             string notes = dpBilling.Value.ToString("yyyy-MM");
 
             dtBillingSent = new DataTable
@@ -590,7 +973,7 @@ namespace OfficeAutomation
             LoadReporting();
             string fac_data = "", fac_send = "", data_name = "", send_name = "", r_data = "";
             var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
-            string output= "Billing Export for " + report_date + "\r\n\r\n";
+            string output = "Billing Export for " + report_date + "\r\n\r\n";
             string export_path = prop.BillingExports;
             string dsn = txtDSN_CIPS.Text;
             try
@@ -666,7 +1049,7 @@ namespace OfficeAutomation
                 return false;
             }
             string filename = export_path + report_date + "_Billing.txt";
-            try 
+            try
             {
                 File.WriteAllText(filename, output);
                 Process.Start("notepad.exe", filename);
@@ -705,7 +1088,364 @@ namespace OfficeAutomation
             }
         }
 
-        #endregion
+        public bool UpdateAddressList(bool insert)
+        {
+            bool success = false;
+            SqlCommand cmd;
+            var conn = new SqlConnection(prop.RxBackend);
+            string sql_insert = @"INSERT INTO [dbo].[ACCOUNT_LIST]
+               ([ID]
+               ,[AccountName]
+               ,[GroupCode]
+               ,[Contact1]
+               ,[Contact2]
+               ,[Address1]
+               ,[Address2]
+               ,[Address3]
+               ,[City]
+               ,[City2]
+               ,[State]
+               ,[Zip]
+               ,[Zip2]
+               ,[Phone]
+               ,[Email]
+               ,[Email2]
+               ,[Email3]
+               ,[Type]
+               ,[Terms]
+               ,[Rep]
+               ,[Stmts]
+               ,[ShipTo]
+               ,[Tax]
+               ,[EmailStmts]
+               ,[InvoiceNumber])
+            VALUES
+               (@ID
+		       ,@AccountName
+		       ,@GroupCode
+		       ,@Contact1
+		       ,@Contact2
+		       ,@Address1
+		       ,@Address2
+		       ,@Address3
+		       ,@City
+		       ,@City2
+		       ,@State
+		       ,@Zip
+		       ,@Zip2
+		       ,@Phone
+		       ,@Email
+		       ,@Email2
+		       ,@Email3
+		       ,@AccType
+		       ,@Terms
+		       ,@Rep
+		       ,@Statements
+		       ,@ShipTo
+		       ,@Tax
+		       ,@EmailStmts
+		       ,@InvoiceNumber
+		       )";
+            string sql_update = @"UPDATE [dbo].[ACCOUNT_LIST]
+            SET [ID] = @ID
+              ,[AccountName] = @AccountName
+              ,[GroupCode] = @GroupCode
+              ,[Contact1] = @Contact1
+              ,[Contact2] = @Contact2
+              ,[Address1] = @Address1
+	          ,[Address2] = @Address2
+              ,[Address3] = @Address3
+              ,[City] = @City
+              ,[City2] = @City2
+              ,[State] = @State
+              ,[Zip] = @Zip
+              ,[Zip2] = @Zip2
+              ,[Phone] = @Phone
+              ,[Email] = @Email
+              ,[Email2] = @Email2
+              ,[Email3] = @Email3
+              ,[Type] = @AccType
+              ,[Terms] = @Terms
+              ,[Rep] = @Rep
+              ,[Stmts] = @Statements
+              ,[ShipTo] = @ShipTo
+              ,[Tax] = @Tax
+              ,[EmailStmts] = @EmailStmts
+              ,[InvoiceNumber] = @InvoiceNumber
+            WHERE [ID] = @ID_Update";
+
+            if (insert)
+                cmd = new SqlCommand(sql_insert, conn);
+            else
+                cmd = new SqlCommand(sql_update, conn);
+            string ID = txtAccID.Text;
+
+            if (!insert && ID != Acc_ID)
+            {
+                ID = Acc_ID;
+            }
+
+            try
+            {
+                conn.Open();
+
+                cmd.Parameters.Add("@ID", SqlDbType.VarChar).Value = txtAccID.Text;
+                cmd.Parameters.Add("@ID_Update", SqlDbType.VarChar).Value = ID;
+                cmd.Parameters.Add("@AccountName", SqlDbType.VarChar).Value = txtAccName.Text;
+                cmd.Parameters.Add("@GroupCode", SqlDbType.VarChar).Value = txtAccGroupCode.Text;
+                cmd.Parameters.Add("@Address1", SqlDbType.VarChar).Value = txtAccAddress1.Text;
+                cmd.Parameters.Add("@Address2", SqlDbType.VarChar).Value = txtAccAddress2.Text;
+                cmd.Parameters.Add("@Address3", SqlDbType.VarChar).Value = txtAccAddress3.Text;
+                cmd.Parameters.Add("@City", SqlDbType.VarChar).Value = txtAccCity.Text;
+                cmd.Parameters.Add("@City2", SqlDbType.VarChar).Value = txtAccCity2.Text;
+                cmd.Parameters.Add("@State", SqlDbType.VarChar).Value = ddAccStates.SelectedValue.ToString();
+                cmd.Parameters.Add("@Zip", SqlDbType.VarChar).Value = txtAccZip.Text;
+                cmd.Parameters.Add("@Zip2", SqlDbType.VarChar).Value = txtAccZip2.Text;
+                cmd.Parameters.Add("@Phone", SqlDbType.VarChar).Value = txtAccPhone.Text;
+                cmd.Parameters.Add("@Email", SqlDbType.VarChar).Value = txtAccEmail.Text;
+                cmd.Parameters.Add("@Email2", SqlDbType.VarChar).Value = txtAccEmail2.Text;
+                cmd.Parameters.Add("@Email3", SqlDbType.VarChar).Value = txtAccEmail3.Text;
+                cmd.Parameters.Add("@AccType", SqlDbType.VarChar).Value = ddAccType.SelectedValue.ToString();
+                cmd.Parameters.Add("@Terms", SqlDbType.VarChar).Value = ddAccTerms.SelectedValue.ToString();
+                cmd.Parameters.Add("@Rep", SqlDbType.VarChar).Value = txtAccRep.Text;
+                cmd.Parameters.Add("@Statements", SqlDbType.VarChar).Value = txtAccStatements.Text;
+                cmd.Parameters.Add("@ShipTo", SqlDbType.VarChar).Value = txtAccShipTo.Text;
+                cmd.Parameters.Add("@Tax", SqlDbType.VarChar).Value = txtAccTax.Text;
+                cmd.Parameters.Add("@EmailStmts", SqlDbType.VarChar).Value = txtAccEmailStmts.Text;
+                cmd.Parameters.Add("@InvoiceNumber", SqlDbType.VarChar).Value = txtAccInvoiceNumber.Text;
+                cmd.Parameters.Add("@Contact1", SqlDbType.VarChar).Value = txtAccContact1.Text;
+                cmd.Parameters.Add("@Contact2", SqlDbType.VarChar).Value = txtAccContact2.Text;
+
+                cmd.ExecuteNonQuery();
+                success = true;
+                ClearAccList();
+                if (insert)
+                    Utility.WriteActivity("New Account added");
+                else
+                    Utility.WriteActivity("Account updated");
+                LoadAccounts();
+            }
+            catch (Exception ex)
+            {
+                Utility.WriteActivity(ex.Message);
+                MessageBox.Show(ex.Message);
+                success = false;
+            }
+            finally
+            { 
+
+                conn.Close();
+            }
+            return success;
+        }
+
+        public bool UpdateManualCharges(bool insert, decimal qty, decimal price)
+        {
+            bool success = false;
+            SqlCommand cmd;
+            var conn = new SqlConnection(prop.RxBackend);
+            string sql_insert = @"INSERT INTO [dbo].[MANUAL_CHARGES]
+                        ([ACCT]
+                        ,[DATE]
+                        ,[CATEGORY]
+                        ,[DESCRIPTION]
+                        ,[QTY]
+                        ,[PRICE]
+                        ,[TECH])
+                    VALUES
+                       (@ACCT
+		               ,@DATE
+		               ,@CATEGORY
+                       ,@DESCRIPTION
+		               ,@QTY
+		               ,@PRICE
+		               ,@TECH
+		               )";
+            string sql_update = @"
+                UPDATE [dbo].[MANUAL_CHARGES]
+                   SET [ACCT] = @ACCT
+                      ,[DATE] = @DATE
+                      ,[CATEGORY] = @CATEGORY
+                      ,[DESCRIPTION] = @DESCRIPTION
+                      ,[QTY] = @QTY
+                      ,[PRICE] = @PRICE     
+                      ,[UPDATED] = GETDATE()
+                      ,[UPDATED_BY] = @TECH
+                 WHERE [ID] = @ID";
+
+            if (insert)
+                cmd = new SqlCommand(sql_insert, conn);
+            else
+                cmd = new SqlCommand(sql_update, conn);
+            string ID = txtAccID.Text;
+
+            if (!insert && ID != Acc_ID)
+            {
+                ID = Acc_ID;
+            }
+
+            try
+            {
+                conn.Open();
+
+                if (!insert)
+                    cmd.Parameters.Add("@ID", SqlDbType.Int).Value = int.Parse(MC_ID);
+                cmd.Parameters.Add("@ACCT", SqlDbType.VarChar).Value = ddMC_Account.SelectedValue.ToString();
+                cmd.Parameters.Add("@DATE", SqlDbType.DateTime).Value = dpMC_Date.Value.AddDays(1).AddSeconds(-1); ;
+                cmd.Parameters.Add("@CATEGORY", SqlDbType.VarChar).Value = ddMC_Category.SelectedValue.ToString();
+                cmd.Parameters.Add("@DESCRIPTION", SqlDbType.VarChar).Value = txtMC_Desc.Text;
+                cmd.Parameters.Add("@QTY", SqlDbType.Decimal).Value = qty;
+                cmd.Parameters.Add("@PRICE", SqlDbType.Decimal).Value = price;
+                cmd.Parameters.Add("@TECH", SqlDbType.VarChar).Value = txtMC_Tech.Text;
+
+                cmd.ExecuteNonQuery();
+                if (!insert)
+                    LogActivity("MAN_CHARGE", 0, 
+                    MC_ID + "- Q: " + qty.ToString() + ", P: " + price.ToString(), txtMC_Tech.Text);
+                success = true;
+
+            }
+            catch (Exception ex)
+            {
+                Utility.WriteActivity(ex.Message);
+                success = false;
+            }
+            finally
+            {
+                conn.Close();
+            }
+            if (insert)
+                Utility.WriteActivity("New Manual Charge added");
+            else
+                Utility.WriteActivity("Manual Charge updated");
+
+            ClearManualCharges();
+            LoadManualCharges();
+
+            return success;
+
+        }
+
+        public void ImportManualCharges(string pth)
+        {
+            Utility.WriteActivity("Reading: " + pth);
+
+            Microsoft.Office.Interop.Excel.Application xlApp = new Microsoft.Office.Interop.Excel.Application();
+            Microsoft.Office.Interop.Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(@pth);
+            Microsoft.Office.Interop.Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
+            Microsoft.Office.Interop.Excel.Range xlRange = xlWorksheet.UsedRange;
+
+            int rowCount = xlRange.Rows.Count;
+            int colCount = xlRange.Columns.Count;
+
+            string acct = "", dte = "", category = "", description = "",qty = "",price = "", tech = "";
+            SqlCommand cmd;
+            var conn = new SqlConnection(prop.RxBackend);
+            string sql_insert = @"INSERT INTO [dbo].[MANUAL_CHARGES]
+                        ([ACCT]
+                        ,[DATE]
+                        ,[CATEGORY]
+                        ,[DESCRIPTION]
+                        ,[QTY]
+                        ,[PRICE]
+                        ,[TECH])
+                    VALUES
+                       (@ACCT
+		               ,@DATE
+		               ,@CATEGORY
+                       ,@DESCRIPTION
+		               ,@QTY
+		               ,@PRICE
+		               ,@TECH
+		               )";
+            cmd = new SqlCommand(sql_insert, conn);
+
+            for (int i = 1; i <= rowCount; i++)
+            {
+
+                try
+                {
+                    if(i > 1)
+                    {
+                        acct = xlRange.Cells[i, 1].Value2.ToString().Trim();
+                        dte = xlRange.Cells[i, 2].Value.ToString().Trim();
+                        category = xlRange.Cells[i, 3].Value.ToString().Trim();
+                        description = xlRange.Cells[i, 4].Value2.ToString().Trim();
+                        qty = xlRange.Cells[i, 5].Value2.ToString().Trim();
+                        price = xlRange.Cells[i, 6].Value2.ToString().Trim();
+                        tech = xlRange.Cells[i, 7].Value2.ToString().Trim();                       
+
+                        try
+                        {
+                            conn.Open();
+                            cmd.Parameters.Clear();
+                            cmd.Parameters.Add("@ACCT", SqlDbType.VarChar).Value = acct;
+                            cmd.Parameters.Add("@DATE", SqlDbType.DateTime).Value = DateTime.Parse(dte); 
+                            cmd.Parameters.Add("@CATEGORY", SqlDbType.VarChar).Value = category;
+                            cmd.Parameters.Add("@DESCRIPTION", SqlDbType.VarChar).Value = description;
+                            cmd.Parameters.Add("@QTY", SqlDbType.Decimal).Value = Decimal.Parse(qty);
+                            cmd.Parameters.Add("@PRICE", SqlDbType.Decimal).Value = Decimal.Parse(price);
+                            cmd.Parameters.Add("@TECH", SqlDbType.VarChar).Value = tech;
+
+                            cmd.ExecuteNonQuery();
+
+                            Utility.WriteActivity("Record added: " + acct + ": " + description);
+                        }
+                        catch (Exception ex)
+                        {
+                            Utility.WriteActivity(ex.Message);
+                        }
+                        finally
+                        {
+                            conn.Close();
+                        }
+
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                Utility.WriteActivity(ex.Message);
+                }
+
+            }
+
+        }
+
+        public void FillDropDownList(string Query, ComboBox DropDownName, string CONNECTION_STRING)
+        {
+            // If you use a DataTable (or any object which implmenets IEnumerable)
+            // you can bind the results of your query directly as the 
+            // datasource for the ComboBox. 
+            DataTable dt = new DataTable();
+
+            // Where possible, use the using block for data access. The 
+            // using block handles disposal of resources and connection 
+            // cleanup for you:
+            using (var cn = new SqlConnection(CONNECTION_STRING))
+            {
+                using (var cmd = new SqlCommand(Query, cn))
+                {
+                    cn.Open();
+
+                    try
+                    {
+                        dt.Load(cmd.ExecuteReader());
+                    }
+                    catch (SqlException e)
+                    {
+                        // Do some logging or something. 
+                        MessageBox.Show("There was an error accessing your data. DETAIL: " + e.ToString());
+                    }
+                }
+            }
+
+            DropDownName.DataSource = dt;
+            DropDownName.ValueMember = dt.Columns[0].ColumnName;
+            DropDownName.DisplayMember = dt.Columns[1].ColumnName;
+        }
+
+        #endregion  --END Database Functions
 
         #region Reporting Funcions
 
@@ -728,6 +1468,7 @@ namespace OfficeAutomation
 
                 var rpt_data = rpt.Concat(p).ToArray();
 
+
                 if (valid == "True")
                 {
                     Utility.WriteActivity("Running report: " + report);
@@ -739,7 +1480,7 @@ namespace OfficeAutomation
             Utility.WriteActivity("Report export transactions complete");
         }
 
-        public void ExportBillingReport(string report, string export_path, string export_type,  
+        public void ExportBillingReport(string report, string export_path, string export_type,
             string data, string send, string dsn)
         {
             var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
@@ -948,7 +1689,7 @@ namespace OfficeAutomation
                         if (String.IsNullOrEmpty(when))
                         {
                             when = eventItem.Start.Date;
-
+                            Utility.WriteActivity(ev);
 
                             var h = ev.Split('-')[0]; //Hyphen split
                             var s = ev.Split(' ')[0];//Space split
@@ -977,11 +1718,27 @@ namespace OfficeAutomation
                             }
                             var valid = fac.name != "none" ? true : false;
                             var notify_type = ev.Contains("(e") && valid ? "Email" : "Fax";
+                            if (ev.Contains("{"))
+                            {
+                                var str = GetStringBetweenCharacters(ev, '{', '}').Replace(" ", "").ToLower();
+
+                                if (str.Contains("ef") || str.Contains("fe"))
+                                {
+                                    notify_type = "Both";
+                                }
+                                else if (str.Contains("e"))
+                                {
+                                    notify_type = "Email";
+                                }
+                                else if (str.Contains("f"))
+                                {
+                                    notify_type = "Fax";
+                                }
+                            }
+
                             notify_type = fac.notify_type != "" ? fac.notify_type : notify_type;
                             Facility facility = new Facility(fac.code, fac.name, fac.phone, fac.fax, fac.email, notify_type, valid);
                             facilities.Add(facility);
-
-
 
                         }
                         Console.WriteLine("{0} ({1})", eventItem.Summary, when);
@@ -1062,6 +1819,7 @@ namespace OfficeAutomation
         {
             try
             {
+                txtMC_Tech.Text = userName;
                 txtNotifyReport.Text = ReadConfig("NotifyReport");
                 txtNotifyExports.Text = ReadConfig("NotifyExports");
                 txtCIPS.Text = ReadConfig("CIPS");
@@ -1083,6 +1841,8 @@ namespace OfficeAutomation
                 txtForward.Text = ReadConfig("ForwardAddress");
                 txtBillingRptFolder.Text = ReadConfig("BillingRptFolder");
                 txtBillingExports.Text = ReadConfig("BillingExports");
+                txtCE_Report.Text = ReadConfig("CE_Report");
+                txtCE_Export.Text = ReadConfig("CE_Export");
                 //Attachment Processing
                 txtAddressAttachment.Text = ReadConfig("AddressAttachment");
                 txtPasswordAttachment.Text = Decrypt(ReadConfig("PasswordAttachment"));
@@ -1093,12 +1853,55 @@ namespace OfficeAutomation
                 txtFrom.Text = prop.fromCrop.X.ToString() + "," + prop.fromCrop.Y.ToString();
                 txtTo.Text = prop.toCrop.X.ToString() + "," + prop.toCrop.Y.ToString();
                 txtDpi.Text = prop.dpi.ToString();
+
                 txtEmailMessage.Text = prop.SendEmailMessage;
                 txtEmailSubject.Text = prop.SendEmailSubject;
                 txtUpdateFolder.Text = prop.update;
 
                 outputFolder = txtProcessFolder.Text;
                 outputFolderNew = txtRenamedFolder.Text;
+
+                //Drop Downs
+                var stateList = new StateArray();
+                var states = stateList.ListOfStates();
+
+                var bindingSource1 = new BindingSource();
+                bindingSource1.DataSource = states;
+
+                ddAccStates.DataSource = bindingSource1.DataSource;
+
+                ddAccStates.DisplayMember = "Name";
+                ddAccStates.ValueMember = "Abbreviations";
+                DataSet = true;
+
+                string sql = "SELECT '' as DESC_, '' as DESCRIPTION UNION  ";
+                sql += @"SELECT DESCRIPTION as DESC_, DESCRIPTION FROM BILLING_CODES 
+                            WHERE CATEGORY = 'ACC_TYPE' ORDER BY DESCRIPTION ";
+                FillDropDownList(sql, ddAccType, prop.RxBackend);
+
+                sql = "SELECT '' as DESCRIPTION, '' as DESCRIPTION UNION ALL ";
+                sql += "SELECT DESCRIPTION, DESCRIPTION FROM BILLING_CODES WHERE CATEGORY = 'TERMS' ";
+                FillDropDownList(sql, ddAccTerms, prop.RxBackend);
+
+                sql = "SELECT '' as DESCRIPTION, '' as DESCRIPTION UNION ALL ";
+                sql += "SELECT DESCRIPTION, DESCRIPTION FROM BILLING_CODES WHERE CATEGORY = 'MC_CATEGORY' ";
+                FillDropDownList(sql, ddMC_Category, prop.RxBackend);
+
+                this.ddMC_Account.SelectedIndexChanged -= new System.EventHandler(this.ddMC_Account_SelectedIndexChanged);
+                sql = "SELECT '' as ID_VAL, '' as ID UNION ";
+                sql += "SELECT ID as ID_VAL, ID FROM ACCOUNT_LIST ORDER BY ID ";
+                FillDropDownList(sql, ddMC_Account, prop.RxBackend);
+                this.ddMC_Account.SelectedIndexChanged += new System.EventHandler(this.ddMC_Account_SelectedIndexChanged);
+
+                this.ddBilling_Codes.SelectedIndexChanged -= new System.EventHandler(this.ddBilling_Codes_SelectedIndexChanged);
+                sql = "SELECT '' as CATEGORY, '' as CATEGORY UNION ALL ";
+                sql += "SELECT DISTINCT CATEGORY AS CAT_VAL, CATEGORY FROM BILLING_CODES  ";
+                FillDropDownList(sql, ddBilling_Codes, prop.RxBackend);
+                this.ddBilling_Codes.SelectedIndexChanged += new System.EventHandler(this.ddBilling_Codes_SelectedIndexChanged);
+
+                var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                txtBuildInfo.Text = String.Format("Application Build: {0}", version);
+
             }
             catch (Exception ex)
             {
@@ -1123,107 +1926,288 @@ namespace OfficeAutomation
 
         public void readExcelFile(string pth)
         {
-            //Utility.WriteActivity("Reading: " + pth);
-            //facilities.Clear();
+            Utility.WriteActivity("Reading: " + pth);
+            facilities.Clear();
 
-            ////Create COM Objects. Create a COM object for everything that is referenced
-            //Excel.Application xlApp = new Excel.Application();
-            //Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(@pth);
-            //Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
-            //Excel.Range xlRange = xlWorksheet.UsedRange;
+            //Create COM Objects. Create a COM object for everything that is referenced
+            Microsoft.Office.Interop.Excel.Application xlApp = new Microsoft.Office.Interop.Excel.Application();
+            Microsoft.Office.Interop.Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(@pth);
+            Microsoft.Office.Interop.Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
+            Microsoft.Office.Interop.Excel.Range xlRange = xlWorksheet.UsedRange;
 
-            //int rowCount = xlRange.Rows.Count;
-            //int colCount = prop.FAC_COLUMN; //xlRange.Columns.Count;
+            int rowCount = xlRange.Rows.Count;
+            int colCount = prop.FAC_COLUMN; //xlRange.Columns.Count;
 
-            ////iterate over the rows and columns and print to the console as it appears in the file
-            ////excel is not zero based!!
-            //var strVal = "";
+            //iterate over the rows and columns and print to the console as it appears in the file
+            //excel is not zero based!!
+            var strVal = "";
 
-            //for (int i = 1; i <= rowCount; i++)
+            for (int i = 1; i <= rowCount; i++)
+            {
+                //for (int j = 1; j <= colCount; j++)
+                if (colCount == prop.FAC_COLUMN && i > 1)
+                {
+                    //new line
+                    //if (j == 1)
+                    //{
+                    //    //Console.Write("\r\n");
+                    //    //Utility.WriteActivity("");
+                    //}
+
+                    try
+                    {
+                        if (xlRange.Cells[i, colCount] != null && xlRange.Cells[i, colCount].Value2 != null)
+                        {
+                            var fac = new Fac();
+                            //Console.Write(xlRange.Cells[i, j].Value2.ToString() + "\t");
+                            strVal = xlRange.Cells[i, colCount].Value2.ToString();
+                            if (strVal.Trim() != "")
+                            {
+                                var h = strVal.Split('-')[0]; //Hyphen split
+                                var s = strVal.Split(' ')[0];//Space split
+                                if (h.Length < 4)
+                                {
+                                    fac = GetFacility(h.Trim());
+                                    Utility.WriteActivity(fac.name + ": imported");
+                                }
+                                else if (s.Length < 5)
+                                {
+                                    fac = GetFacility(s.Trim());
+                                    Utility.WriteActivity(fac.name + ": imported");
+                                }
+                                else
+                                {
+                                    fac.code = strVal;
+                                    fac.name = "none";
+                                    fac.email = "none";
+                                    fac.fax = "none";
+                                    fac.phone = "none";
+                                    fac.notify_type = "none";
+                                    Utility.WriteActivity(fac.name + ": imported");
+                                }
+                                var valid = fac.name != "none" ? true : false;
+                                var notify_type = strVal.Contains("(e") && valid ? "Email" : "Fax";
+                                if (strVal.Contains("{"))
+                                {
+                                    var str = GetStringBetweenCharacters(strVal, '{', '}').Replace(" ", "").ToLower();
+
+                                    if (str.Contains("ef") || str.Contains("fe"))
+                                    {
+                                        notify_type = "Both";
+                                    }
+                                    else if (str.Contains("e"))
+                                    {
+                                        notify_type = "Email";
+                                    }
+                                    else if (str.Contains("f"))
+                                    {
+                                        notify_type = "Fax";
+                                    }
+                                }
+                                notify_type = fac.notify_type != "" ? fac.notify_type : notify_type;
+                                Facility facility = new Facility(fac.code, fac.name, fac.phone, fac.fax, fac.email, notify_type, valid);
+                                facilities.Add(facility);
+                            }
+                        }
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+
+                }
+            }
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Code", typeof(string));
+            dt.Columns.Add("Facility Name", typeof(string));
+            dt.Columns.Add("Email Addresses", typeof(string));
+            dt.Columns.Add("Fax", typeof(string));
+            dt.Columns.Add("Phone", typeof(string));
+            dt.Columns.Add("Notify Type", typeof(string));
+            dt.Columns.Add("Valid", typeof(string));
+            foreach (var fac in facilities)
+            {
+                DataRow dr = dt.NewRow();
+                dr["Code"] = fac.code;
+                dr["Facility Name"] = fac.name;
+                dr["Email Addresses"] = fac.email;
+                dr["Fax"] = fac.fax;
+                dr["Phone"] = fac.phone;
+                dr["Notify Type"] = fac.notify_type;
+                dr["Valid"] = fac.valid_code.ToString();
+                dt.Rows.Add(dr);
+                if (!fac.valid_code)
+                {
+                    txtInfo.Text += fac.code + "\r\n";
+                }
+            }
+
+            gvNotiifications.DataSource = dt;
+            Process[] excelProcesses = Process.GetProcessesByName("excel");
+            foreach (Process p in excelProcesses)
+            {
+                if (string.IsNullOrEmpty(p.MainWindowTitle)) // use MainWindowTitle to distinguish this excel process with other excel processes 
+                {
+                    p.Kill();
+                }
+            }
+        }
+
+        public void readExcelImportCharges(string pth)
+        {
+            Utility.WriteActivity("Reading: " + pth);
+
+            Microsoft.Office.Interop.Excel.Application xlApp = new Microsoft.Office.Interop.Excel.Application();
+            Microsoft.Office.Interop.Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(@pth);
+            Microsoft.Office.Interop.Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
+            Microsoft.Office.Interop.Excel.Range xlRange = xlWorksheet.UsedRange;
+
+            int rowCount = xlRange.Rows.Count;
+            int colCount = prop.FAC_COLUMN; //xlRange.Columns.Count;
+
+            //iterate over the rows and columns and print to the console as it appears in the file
+            //excel is not zero based!!
+            string acct = "", date = "", first_name = "", last_name = "", cost = "", qty="", med = "", description = "" ;
+            decimal qty_d, price_d;
+
+            SqlCommand cmd;
+            var conn = new SqlConnection(prop.RxBackend);
+            string sql_insert = @"INSERT INTO [dbo].[MANUAL_CHARGES]
+                        ([ACCT]
+                        ,[DATE]
+                        ,[CATEGORY]
+                        ,[DESCRIPTION]
+                        ,[QTY]
+                        ,[PRICE]
+                        ,[TECH])
+                    VALUES
+                       (@ACCT
+		               ,@DATE
+		               ,@CATEGORY
+                       ,@DESCRIPTION
+		               ,@QTY
+		               ,@PRICE
+		               ,@TECH
+		               )";
+            cmd = new SqlCommand(sql_insert, conn);
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Acct", typeof(string));
+            dt.Columns.Add("Date", typeof(DateTime));
+            dt.Columns.Add("Category", typeof(string));
+            dt.Columns.Add("Description", typeof(string));
+            dt.Columns.Add("Qty", typeof(decimal));
+            dt.Columns.Add("Price", typeof(decimal));
+            dt.Columns.Add("Tech", typeof(string));
+
+            for (int i = 1; i <= rowCount; i++)
+            {
+                if (i > 1)
+                {
+                    try
+                    {
+                        if ( xlRange.Cells[i, 1].Value2 != null)
+                        {
+                            first_name = ConvertTo_ProperCase(xlRange.Cells[i, 1].Value2.ToString());
+                            last_name = ConvertTo_ProperCase(xlRange.Cells[i, 2].Value2.ToString());
+                            acct = xlRange.Cells[i, 5].Value2.ToString();
+                            date = xlRange.Cells[i, 7].Value.ToString();
+                            med = ConvertTo_ProperCase(xlRange.Cells[i, 11].Value2.ToString());
+                            qty = xlRange.Cells[i, 12].Value2.ToString();
+                            cost = xlRange.Cells[i, 13].Value2.ToString();
+                            //Utility.WriteActivity(acct + " :: " + date + " :: " + first_name + " :: " + last_name + " :: " + med + " :: " + qty + " :: " + cost);
+
+                            if (Decimal.TryParse(qty.Trim(), out qty_d) ) {
+
+                            }
+                            else
+                            {
+                                Utility.WriteActivity("Could not convert qty value on line " + i);
+                                continue;
+                            }
+
+                            if (Decimal.TryParse(cost.Trim(), out price_d))
+                            {
+
+                            }
+                            else
+                            {
+                                Utility.WriteActivity("Could not convert cost value on line " + i);
+                                continue;
+                            }
+                            description = first_name + " " + last_name + " ; " + med;
+
+                            DataRow dr = dt.NewRow();
+                            dr["Acct"] = acct;
+                            dr["Date"] = DateTime.Parse(date);
+                            dr["Category"] = "Local Pharmacy";
+                            dr["Description"] = first_name + " " + last_name + " ; " + med;
+                            dr["Qty"] = qty_d;
+                            dr["Price"] = price_d;
+                            dr["Tech"] = Environment.UserName;
+                            dt.Rows.Add(dr);
+
+                            try
+                            {
+                                conn.Open();
+                                cmd.Parameters.Clear();
+                                cmd.Parameters.Add("@ACCT", SqlDbType.VarChar).Value = acct;
+                                cmd.Parameters.Add("@DATE", SqlDbType.DateTime).Value = DateTime.Parse(date);
+                                cmd.Parameters.Add("@CATEGORY", SqlDbType.VarChar).Value = "Local Pharmacy";
+                                cmd.Parameters.Add("@DESCRIPTION", SqlDbType.VarChar).Value = description;
+                                cmd.Parameters.Add("@QTY", SqlDbType.Decimal).Value = Decimal.Parse(qty);
+                                cmd.Parameters.Add("@PRICE", SqlDbType.Decimal).Value = Decimal.Parse(cost);
+                                cmd.Parameters.Add("@TECH", SqlDbType.VarChar).Value = Environment.UserName;
+
+                                cmd.ExecuteNonQuery();
+
+                                Utility.WriteActivity("Record added: " + acct + " :: " + description);
+                            }
+                            catch (Exception ex)
+                            {
+                                Utility.WriteActivity(ex.Message);
+                            }
+                            finally
+                            {
+                                conn.Close();
+                            }
+
+                        }
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+
+                }
+            }
+            StringBuilder sb = new StringBuilder();
+            IEnumerable<string> columnNames = dt.Columns.Cast<DataColumn>().                                             Select(column => column.ColumnName);
+            sb.AppendLine(string.Join(",", columnNames));
+
+            foreach (DataRow row in dt.Rows)
+            {
+                IEnumerable<string> fields = row.ItemArray.Select(field => field.ToString());
+                sb.AppendLine(string.Join(",", fields));
+            }
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = "CSV files (*.csv)|*.csv";
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                File.WriteAllText(sfd.FileName, sb.ToString());
+            }
+            //else
             //{
-            //    //for (int j = 1; j <= colCount; j++)
-            //    if (colCount == prop.FAC_COLUMN && i > 1)
-            //    {
-            //        //new line
-            //        //if (j == 1)
-            //        //{
-            //        //    //Console.Write("\r\n");
-            //        //    //Utility.WriteActivity("");
-            //        //}
-
-            //        try
-            //        {
-            //            if (xlRange.Cells[i, colCount] != null && xlRange.Cells[i, colCount].Value2 != null)
-            //            {
-            //                var fac = new Fac();
-            //                //Console.Write(xlRange.Cells[i, j].Value2.ToString() + "\t");
-            //                strVal = xlRange.Cells[i, colCount].Value2.ToString();
-            //                if (strVal.Trim() != "")
-            //                {
-            //                    var h = strVal.Split('-')[0]; //Hyphen split
-            //                    var s = strVal.Split(' ')[0];//Space split
-            //                    if (h.Length < 4)
-            //                    {
-            //                        fac = GetFacility(h.Trim());
-            //                        Utility.WriteActivity(fac.name + ": imported");
-            //                    }
-            //                    else if (s.Length < 5)
-            //                    {
-            //                        fac = GetFacility(s.Trim());
-            //                        Utility.WriteActivity(fac.name + ": imported");
-            //                    }
-            //                    else
-            //                    {
-            //                        fac.code = strVal;
-            //                        fac.name = "none";
-            //                        fac.email = "none";
-            //                        fac.fax = "none";
-            //                        fac.phone = "none";
-            //                        fac.notify_type = "none";
-            //                        Utility.WriteActivity(fac.name + ": imported");
-            //                    }
-            //                    var valid = fac.name != "none" ? true : false;
-            //                    var notify_type = strVal.Contains("(e") && valid ? "Email" : "Fax";
-            //                    notify_type = fac.notify_type != "" ? fac.notify_type : notify_type;
-            //                    Facility facility = new Facility(fac.code, fac.name, fac.phone, fac.fax, fac.email, notify_type, valid);
-            //                    facilities.Add(facility);
-            //                }
-            //            }
-
-
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            MessageBox.Show(ex.Message);
-            //        }
-
-            //    }
+            //    return false;
             //}
 
-            //DataTable dt = new DataTable();
-            //dt.Columns.Add("Code", typeof(string));
-            //dt.Columns.Add("Facility Name", typeof(string));
-            //dt.Columns.Add("Email Addresses", typeof(string));
-            //dt.Columns.Add("Fax", typeof(string));
-            //dt.Columns.Add("Phone", typeof(string));
-            //dt.Columns.Add("Notify Type", typeof(string));
-            //dt.Columns.Add("Valid", typeof(string));
-            //foreach (var fac in facilities)
-            //{
-            //    DataRow dr = dt.NewRow();
-            //    dr["Code"] = fac.code;
-            //    dr["Facility Name"] = fac.name;
-            //    dr["Email Addresses"] = fac.email;
-            //    dr["Fax"] = fac.fax;
-            //    dr["Phone"] = fac.phone;
-            //    dr["Notify Type"] = fac.notify_type;
-            //    dr["Valid"] = fac.valid_code.ToString();
-            //    dt.Rows.Add(dr);
-            //    if (!fac.valid_code)
-            //    {
-            //        txtInfo.Text += fac.code + "\r\n";
-            //    }
-            //}
+
 
             //gvNotiifications.DataSource = dt;
             //Process[] excelProcesses = Process.GetProcessesByName("excel");
@@ -1234,6 +2218,12 @@ namespace OfficeAutomation
             //        p.Kill();
             //    }
             //}
+        }
+
+        public static string ConvertTo_ProperCase(string text)
+        {
+            TextInfo myTI = new CultureInfo("en-US", false).TextInfo;
+            return myTI.ToTitleCase(text.ToLower());
         }
 
         public static string Encrypt(string textToEncrypt)
@@ -1304,6 +2294,13 @@ namespace OfficeAutomation
             txtFacUser.Text = "";
             txtFacilityName.Text = "";
             txtFacEmail.Text = "";
+        }
+
+        public void ClearCodes()
+        {
+            txtBilling_Code.Text = "";
+            ddBilling_Codes.SelectedValue = "";
+            btnAddCode.Text = "Add";
         }
 
         public bool SendEmail(string msg, string subject, string recip, string from, string from_name, string[] attachments)
@@ -1698,19 +2695,19 @@ namespace OfficeAutomation
                 }
                 else
                 {
-                    accounts = new string[] { " "};
+                    accounts = new string[] { " " };
                 }
                 string docs = "";
                 docs = GetBillingDocuments(txtBillingExports.Text, code, accounts);
                 row["Documents"] = docs;
-                if (email.Trim().Length > 2) 
+                if (email.Trim().Length > 2)
                 {
                     row["Send"] = true;
                 }
             }
         }
 
-        public string GetBillingDocuments(string folder,string facility , string[]  accounts)
+        public string GetBillingDocuments(string folder, string facility, string[] accounts)
         {
             DirectoryInfo d = new DirectoryInfo(@folder);
             FileInfo[] Files = d.GetFiles("*.pdf"); //Getting Text files
@@ -1728,11 +2725,11 @@ namespace OfficeAutomation
                     identity = "invalid";
                 }
 
-                acct =  accounts.Where(s => file.Name.Contains(s)).FirstOrDefault();
+                acct = accounts.Where(s => file.Name.Contains(s)).FirstOrDefault();
 
                 if (acct != null && acct != facility.Trim())
                 {
-                    if(acct.Trim() != "")
+                    if (acct.Trim() != "")
                     {
                         Utility.WriteActivity("Report Acct: " + identity + ": " + facility.Trim() + ": " + file.Name);
                         docs += doc + ";";
@@ -1759,7 +2756,7 @@ namespace OfficeAutomation
             //Utility.WriteActivity("Code: " + user + code + " Email: " + email + " Docs: " + docs);
             bool sent;
             string[] documents = docs.Trim().Split(';');
-            for(int i = 0; i<documents.Length; i++)
+            for (int i = 0; i < documents.Length; i++)
             {
                 if (documents[i].Trim() != "")
                     documents[i] = txtBillingExports.Text + documents[i];
@@ -1774,7 +2771,7 @@ namespace OfficeAutomation
             }
 
             string[] addresses = email.Trim().Split(';');
-            for (int i = 0; i<addresses.Length; i++)
+            for (int i = 0; i < addresses.Length; i++)
             {
                 if (addresses[i].Trim() != "")
                 {
@@ -1795,6 +2792,39 @@ namespace OfficeAutomation
         {
             txtDataRpt.Text = "";
             txtSendRpt.Text = "";
+        }
+
+        public void ClearAccList()
+        {
+            txtAccID.Text = "";
+            txtAccName.Text = "";
+            txtAccGroupCode.Text = "";
+            txtAccContact1.Text = "";
+            txtAccContact2.Text = "";
+            txtAccAddress1.Text = "";
+            txtAccAddress2.Text = "";
+            txtAccAddress3.Text = "";
+            txtAccCity.Text = "";
+            txtAccCity2.Text = "";
+            ddAccStates.SelectedValue = "";
+            txtAccZip.Text = "";
+            txtAccZip2.Text = "";
+            txtAccPhone.Text = "";
+            txtAccEmail.Text = "";
+            txtAccEmail2.Text = "";
+            txtAccEmail3.Text = "";
+            ddAccType.SelectedValue = "";
+            ddAccTerms.SelectedValue = "";
+            txtAccRep.Text = "";
+            txtAccStatements.Text = "";
+            txtAccShipTo.Text = "";
+            txtAccTax.Text = "";
+            txtAccEmailStmts.Text = "";
+            txtAccInvoiceNumber.Text = "";
+
+            AccInsert = true;
+            Acc_ID = "";
+            btnAccUpdate.Text = "Add Account";
         }
 
         public bool GetUpdate()
@@ -1851,6 +2881,34 @@ namespace OfficeAutomation
             return true;
         }
 
+        public void ClearManualCharges()
+        {
+            txtMC_Desc.Text = "";
+            txtMC_Price.Text = "";
+            txtMC_Qty.Text = "";
+            ddMC_Category.SelectedValue = "";
+            ddMC_Account.SelectedValue = "";
+            btnMC_Update.Text = "Save";
+            lbMC_AccCode.Text = "";
+            lbMC_AccName.Text = "";
+            dpMC_Date.Value = DateTime.Now;
+        }
+
+        public static string GetStringBetweenCharacters(string input, char charFrom, char charTo)
+        {
+            int posFrom = input.IndexOf(charFrom);
+            if (posFrom != -1) //if found char
+            {
+                int posTo = input.IndexOf(charTo, posFrom + 1);
+                if (posTo != -1) //if found char
+                {
+                    return input.Substring(posFrom + 1, posTo - posFrom - 1);
+                }
+            }
+
+            return string.Empty;
+        }
+
         #endregion --- End Utility Functions
 
         #region Click Events
@@ -1859,37 +2917,39 @@ namespace OfficeAutomation
             try
             {
                 string typ = cbImportType.GetItemText(cbImportType.SelectedItem);
-                //if (typ == "File")
-                //{
-                //    OpenFileDialog fd = new OpenFileDialog();
-                //    fd.Filter = "Excel Files | *.xlsx; *.xls";
-                //    Utility.WriteActivity("Open File Dialog");
-
-                //    if (fd.ShowDialog() == DialogResult.OK)
-                //    {
-                //        readExcelFile(fd.FileName);
-                //    }
-                //}
-                //else 
-                if (typ == "Remote")
+                if (typ == "File")
                 {
-                    var current_date = DateTime.Now.ToString("MM-dd-yyyy");
-                    var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
-                    if (current_date == report_date)
-                    {
-                        DialogResult result = MessageBox.Show("The select date is the same as the current date\nDo you want to use it?",
-                            "Use Current Date", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                        if (result == DialogResult.No)
-                        {
-                            return;
-                        }
-                    }
+                    OpenFileDialog fd = new OpenFileDialog();
+                    fd.Filter = "Excel Files | *.xlsx; *.xls";
+                    Utility.WriteActivity("Open File Dialog");
 
-                    GetCalNotifications();
+                    if (fd.ShowDialog() == DialogResult.OK)
+                    {
+                        readExcelFile(fd.FileName);
+                    }
                 }
                 else
                 {
-                    return;
+                    if (typ == "Remote")
+                    {
+                        var current_date = DateTime.Now.ToString("MM-dd-yyyy");
+                        var report_date = dptFacExport.Value.ToString("MM-dd-yyyy");
+                        if (current_date == report_date)
+                        {
+                            DialogResult result = MessageBox.Show("The select date is the same as the current date\nDo you want to use it?",
+                                "Use Current Date", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                            if (result == DialogResult.No)
+                            {
+                                return;
+                            }
+                        }
+
+                        GetCalNotifications();
+                    }
+                    else
+                    {
+                        return;
+                    }
                 }
             }
             catch (Exception ex)
@@ -1932,9 +2992,9 @@ namespace OfficeAutomation
                     }
 
                     folder = fbd.FileName;
-                    txtNotifyReport.Text = folder;
-                    WriteConfig("NotifyReport", folder);
-                    Utility.WriteActivity("Notify Report updated");
+                    //txtNotifyReport.Text = folder;
+                    //WriteConfig("NotifyReport", folder);
+                    //Utility.WriteActivity("Notify Report updated");
                 }
                 else
                 {
@@ -1947,6 +3007,11 @@ namespace OfficeAutomation
                         txtNotifyReport.Text = folder;
                         WriteConfig("NotifyReport", folder);
                         Utility.WriteActivity("Notify report updated");
+                        break;
+                    case "btnCE_Report":
+                        txtCE_Report.Text = folder;
+                        WriteConfig("CE_Report", folder);
+                        Utility.WriteActivity("Cotrolled Export report updated");
                         break;
                 }
             }
@@ -2026,6 +3091,11 @@ namespace OfficeAutomation
                         txtUpdateFolder.Text = folder;
                         WriteConfig("update", folder);
                         Utility.WriteActivity("Update folder updated");
+                        break;
+                    case "btnCE_Export":
+                        txtCE_Export.Text = folder;
+                        WriteConfig("CE_Export", folder);
+                        Utility.WriteActivity("Controlled Export folder updated");
                         break;
                 }
             }
@@ -2142,8 +3212,12 @@ namespace OfficeAutomation
             //string facility = "AU";
             //string docs = GetBillingDocuments(txtRenamedFolder.Text, facility, arr);
             //txtInfo.Text = docs;
-            string[] attachments = { @"C:\Files\renamed\1.pdf" };
-            var sent = SendEmail("Your ARX Report from IHS Pharmacy is attached", "Your ARX Report is attached ", "hank@dekalbal.com", "operations@ihspharmacy.com", "IHS Pharmacy", attachments);
+            //string[] attachments = { @"C:\Files\renamed\1.pdf" };
+            //var sent = SendEmail("Your ARX Report from IHS Pharmacy is attached", "Your ARX Report is attached ", "hank@dekalbal.com", "operations@ihspharmacy.com", "IHS Pharmacy", attachments);
+
+            FRM_GRIDVIEW frm = new FRM_GRIDVIEW();
+            frm.Tag = "SELECT TOP 10 * FROM MANUAL_CHARGES";
+            frm.ShowDialog();
 
         }
 
@@ -2219,6 +3293,13 @@ namespace OfficeAutomation
 
         private void btnFacilityEmail_Click(object sender, EventArgs e)
         {
+            DialogResult result = MessageBox.Show("Do you want to send all the email notiifications displayed?",
+                "Send Email Notification", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.No)
+            {
+                return;
+            }
+
             try
             {
                 string code = "", typ = "", valid = "", fac_name = "", email = "";
@@ -2241,7 +3322,7 @@ namespace OfficeAutomation
                     {
                         if (file_exists)
                         {
-                            //email = "dekalb.hda@gmail.com;hank@dekalbal.com;zrefugee@gmail.com";
+                            //email = "dekalb.hda@gmail.com;hank@dekalbal.com;zrefugee@gmail.com;";
                             if (prop.ForwardAddress.ToString() != "")
                             {
                                 email = email + prop.ForwardAddress.ToString();
@@ -2253,8 +3334,15 @@ namespace OfficeAutomation
                             if (sent)
                             {
                                 LogActivity("FAC_EMAIL", 0, fac_name, report_date);
-                                gvNotiifications.Rows[i].DefaultCellStyle.BackColor = Color.Yellow;
-                                File.Delete(att_path);
+                                if (typ == "Email")
+                                {
+                                    gvNotiifications.Rows[i].DefaultCellStyle.BackColor = Color.Yellow;
+                                    File.Delete(att_path);
+                                }
+                                else
+                                {
+                                    gvNotiifications.Rows[i].DefaultCellStyle.BackColor = Color.LightBlue;
+                                }
                             }
 
                         }
@@ -2272,13 +3360,6 @@ namespace OfficeAutomation
             {
                 MessageBox.Show(ex.Message);
                 Utility.WriteActivity(ex.Message);
-                return;
-            }
-
-            DialogResult result = MessageBox.Show("Do you want to send all the email notiifications displayed?",
-                    "Send Email Notification", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (result == DialogResult.No)
-            {
                 return;
             }
 
@@ -2373,7 +3454,7 @@ namespace OfficeAutomation
                 return;
             }
         }
-    
+
         private void btnProcess_Click(object sender, EventArgs e)
         {
             Stopwatch watch = new Stopwatch();
@@ -2466,7 +3547,7 @@ namespace OfficeAutomation
             txt = watch.Elapsed.TotalSeconds.ToString();
             Utility.WriteActivity("Process Time: " + txt);
         }
-        
+
         private void btnSingleFile_Click(object sender, EventArgs e)
         {
             var ofd = new OpenFileDialog();
@@ -2556,9 +3637,9 @@ namespace OfficeAutomation
                             txtPreview.Text += vals[i] + Environment.NewLine;
                         }
 
-                     }
+                    }
             }
-                    
+
         }
 
         private void gvBillingSent_RowHeaderMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -2572,7 +3653,7 @@ namespace OfficeAutomation
         private void gvStaged_RowHeaderMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             int row = e.RowIndex;
-  
+
             string email = gvStaged.Rows[row].Cells["Email"].EditedFormattedValue.ToString();
             string docs = gvStaged.Rows[row].Cells["Documents"].Value.ToString();
             string code = gvStaged.Rows[row].Cells["Code"].Value.ToString();
@@ -2627,7 +3708,7 @@ namespace OfficeAutomation
             if (e.RowIndex == -1) return; //check if row index is not selected
             {
                 if (cell.Equals(3))
-                {                   
+                {
                     val = gvStaged.CurrentCell.EditedFormattedValue.ToString() + ".pdf";
                     vals = gvStaged.CurrentCell.EditedFormattedValue.ToString().Split(';');
                     docs = gvStaged.Rows[row].Cells["Documents"].Value.ToString();
@@ -2638,7 +3719,7 @@ namespace OfficeAutomation
                         val = "";
                         for (int i = 0; i < vals.Length; i++)
                         {
-                            if (i != vals.Length) 
+                            if (i != vals.Length)
                             {
                                 val += vals[i] + ".pdf;";
                             }
@@ -2734,7 +3815,7 @@ namespace OfficeAutomation
             string[] vals;
             if (e.RowIndex == -1) return; //check if row index is not selected
             {
-                if (cell.Equals(4) || cell.Equals(5) )
+                if (cell.Equals(4) || cell.Equals(5))
                     if (gvBillingSent.CurrentCell != null && gvBillingSent.CurrentCell.Value != null)
                     {
                         val = gvBillingSent.CurrentCell.Value.ToString();
@@ -2769,7 +3850,7 @@ namespace OfficeAutomation
                 var pth = Application.StartupPath + "\\scripts\\Office Automation Guide.docx";
                 Process.Start(pth);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
                 Utility.WriteActivity(ex.Message);
@@ -2859,9 +3940,9 @@ namespace OfficeAutomation
                         ([FAC_CODE]
                         ,[ADDRESS]
                         ,[Billing])";
-                sql += " VALUES ('" + txtGroupCode.Text.Trim();
-                sql += "','" + txtFacEmail.Text.Trim();
-                sql += "', 1 )";
+            sql += " VALUES ('" + txtGroupCode.Text.Trim();
+            sql += "','" + txtFacEmail.Text.Trim();
+            sql += "', 1 )";
             var com = new SqlCommand(sql, conn);
             try
             {
@@ -2903,13 +3984,13 @@ namespace OfficeAutomation
 
         private void btnUpdateAddresses_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(txtGroupCode.Text) || gvFacEmail.Rows.Count < 1 )
+            if (string.IsNullOrEmpty(txtGroupCode.Text) || gvFacEmail.Rows.Count < 1)
             {
                 Utility.WriteActivity("A Group Code with email addresses must be selected before updating");
                 return;
             }
             var code = txtGroupCode.Text;
-            string address = "", use="";
+            string address = "", use = "";
             var conn = new SqlConnection(CONN_RX);
             conn.Open();
 
@@ -3015,9 +4096,437 @@ namespace OfficeAutomation
             }
         }
 
+        private void gvStaged_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                ContextMenu mStaged = new ContextMenu();
+                string fac_code = "", fac_name = "";
+
+                int currentMouseOverRow = gvStaged.HitTest(e.X, e.Y).RowIndex;
+
+                if (currentMouseOverRow >= 0)
+                {
+                    fac_code = gvStaged.Rows[currentMouseOverRow].Cells["Code"].Value.ToString();
+                    fac_name = gvStaged.Rows[currentMouseOverRow].Cells["Facility"].Value.ToString();
+                }
+
+                //mRpt.MenuItems.Add(new MenuItem("Copy Row", (o, ev) =>
+                //{
+                //    //MessageBox.Show((o as MenuItem).Text);
+                //    Clipboard.SetText(fac_code + ", " + fac_name);
+                //}));
+
+                mStaged.MenuItems.Add(new MenuItem("Open Billing Exports Folder for " + fac_code, (o, ev) =>
+                {
+                    Utility.WriteActivity(fac_code);
+                    Files frm = new Files();
+                    frm.Facility_code = fac_code;
+                    frm.Billing_folder = prop.BillingExports;
+                    frm.StartPosition = FormStartPosition.CenterParent;
+                    frm.Show(this);
+                    frm.Top = this.Top + ((this.Height / 2) - (frm.Height / 2));
+                    frm.Left = this.Left + ((this.Width / 2) - (frm.Width / 2));
+                }));
+
+                mStaged.Show(gvStaged, new Point(e.X, e.Y));
+
+            }
+        }
+
         private void btnUpdate_Click(object sender, EventArgs e)
         {
             GetUpdate();
+        }
+
+        private void btnAccRefresh_Click(object sender, EventArgs e)
+        {
+            LoadAccounts();
+        }
+
+        private void gvAccList_RowHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            int row = e.RowIndex;
+
+            txtAccID.Text = gvAccList.Rows[row].Cells["ID"].Value.ToString();
+            txtAccName.Text = gvAccList.Rows[row].Cells["AccountName"].Value.ToString();
+            txtAccGroupCode.Text = gvAccList.Rows[row].Cells["GroupCode"].Value.ToString();
+            txtAccContact1.Text = gvAccList.Rows[row].Cells["Contact1"].Value.ToString();
+            txtAccContact2.Text = gvAccList.Rows[row].Cells["Contact2"].Value.ToString();
+            txtAccAddress1.Text = gvAccList.Rows[row].Cells["Address1"].Value.ToString();
+            txtAccAddress2.Text = gvAccList.Rows[row].Cells["Address2"].Value.ToString();
+            txtAccAddress3.Text = gvAccList.Rows[row].Cells["Address3"].Value.ToString();
+            txtAccCity.Text = gvAccList.Rows[row].Cells["City"].Value.ToString();
+            txtAccCity2.Text = gvAccList.Rows[row].Cells["City2"].Value.ToString();
+            ddAccStates.SelectedValue = gvAccList.Rows[row].Cells["State"].Value.ToString();
+            txtAccZip.Text = gvAccList.Rows[row].Cells["Zip"].Value.ToString();
+            txtAccZip2.Text = gvAccList.Rows[row].Cells["Zip2"].Value.ToString();
+            txtAccPhone.Text = gvAccList.Rows[row].Cells["Phone"].Value.ToString();
+            txtAccEmail.Text = gvAccList.Rows[row].Cells["Email"].Value.ToString();
+            txtAccEmail2.Text = gvAccList.Rows[row].Cells["Email2"].Value.ToString();
+            txtAccEmail3.Text = gvAccList.Rows[row].Cells["Email3"].Value.ToString();
+            ddAccType.SelectedValue = gvAccList.Rows[row].Cells["Type"].Value.ToString();
+            ddAccTerms.SelectedValue = gvAccList.Rows[row].Cells["Terms"].Value.ToString();
+            txtAccRep.Text = gvAccList.Rows[row].Cells["Rep"].Value.ToString();
+            txtAccStatements.Text = gvAccList.Rows[row].Cells["Stmts"].Value.ToString();
+            txtAccShipTo.Text = gvAccList.Rows[row].Cells["ShipTo"].Value.ToString();
+            txtAccTax.Text = gvAccList.Rows[row].Cells["Tax"].Value.ToString();
+            txtAccEmailStmts.Text = gvAccList.Rows[row].Cells["EmailStmts"].Value.ToString();
+            txtAccInvoiceNumber.Text = gvAccList.Rows[row].Cells["InvoiceNumber"].Value.ToString();
+
+            AccInsert = false;
+            Acc_ID = gvAccList.Rows[row].Cells["ID"].Value.ToString();
+            btnAccUpdate.Text = "Update Account";
+        }
+
+        private void gvMC_RowHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            int row = e.RowIndex;
+
+            txtMC_Desc.Text = gvMC.Rows[row].Cells["DESCRIPTION"].Value.ToString();
+            txtMC_Price.Text = gvMC.Rows[row].Cells["PRICE"].Value.ToString();
+            txtMC_Qty.Text = gvMC.Rows[row].Cells["QTY"].Value.ToString();
+            ddMC_Account.SelectedValue = gvMC.Rows[row].Cells["ACCT"].Value.ToString();
+            ddMC_Category.SelectedValue = gvMC.Rows[row].Cells["CATEGORY"].Value.ToString();
+            dpMC_Date.Value = DateTime.Parse(gvMC.Rows[row].Cells["DATE"].Value.ToString());
+            MC_ID = gvMC.Rows[row].Cells["ID"].Value.ToString();
+
+            btnMC_Update.Text = "Update";
+        }
+
+        private void btnAccClear_Click(object sender, EventArgs e)
+        {
+            ClearAccList();
+        }
+
+        private void btnAccUpdate_Click(object sender, EventArgs e)
+        {
+            if (String.IsNullOrWhiteSpace(txtAccID.Text) || String.IsNullOrWhiteSpace(txtAccName.Text)
+                || String.IsNullOrWhiteSpace(txtAccGroupCode.Text))
+            {
+                MessageBox.Show("An ID, Account Name and Group Code are required", "Missing Item",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (String.IsNullOrWhiteSpace(txtAccAddress1.Text))
+            {
+                MessageBox.Show("The first Address line is required", "Missing Item",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (String.IsNullOrWhiteSpace(txtAccCity.Text))
+            {
+                MessageBox.Show("The first City line is required", "Missing Item",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (String.IsNullOrWhiteSpace(ddAccStates.SelectedValue.ToString()))
+            {
+                MessageBox.Show("A State is required", "Missing Item",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (String.IsNullOrWhiteSpace(txtAccZip.Text))
+            {
+                MessageBox.Show("The first Zip code line is required", "Missing Item",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            UpdateAddressList(AccInsert);
+        }
+
+        private void btnRefreshCodes_Click(object sender, EventArgs e)
+        {
+            LoadCodes();
+        }
+
+        private void btnMC_Update_Click(object sender, EventArgs e)
+        {
+            
+            decimal q,p;
+
+            if (ddMC_Account.SelectedValue.ToString().Trim() == "")
+            {
+                MessageBox.Show("An Account ID is required", "Missing Account");
+                return;
+            }
+
+            if (txtMC_Desc.Text.Trim() == "" || ddMC_Category.SelectedValue.ToString().Trim() == "")
+            {
+                MessageBox.Show("A Descrition and Category are required", "Missing Item");
+                return;
+            }
+
+            if (decimal.TryParse(txtMC_Qty.Text, out q))
+            {
+                //valid
+            }
+            else
+            {
+                MessageBox.Show("Please enter a valid number for the Quantity", "Invalid Number");
+                return;
+            }
+
+            if (decimal.TryParse(txtMC_Price.Text, out p))
+            {
+                //valid
+            }
+            else
+            {
+                MessageBox.Show("Please enter a valid number for the Price", "Invalid Number");
+                return;
+            }
+
+            bool insert = false;
+
+            if (btnMC_Update.Text == "Save")
+                insert = true;
+
+            UpdateManualCharges(insert, q, p);
+        }
+
+        private void btnMC_Clear_Click(object sender, EventArgs e)
+        {
+            ClearManualCharges();
+        }
+
+        private void btnMC_Refresh_Click(object sender, EventArgs e)
+        {
+            LoadManualCharges();
+            
+        }
+
+        private void gvMC_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                ContextMenu mMC = new ContextMenu();
+                string  id = "", acct = "", price="", qty = "";
+
+                int currentMouseOverRow = gvMC.HitTest(e.X, e.Y).RowIndex;
+
+                if (currentMouseOverRow >= 0)
+                {
+                    id = gvMC.Rows[currentMouseOverRow].Cells["ID"].Value.ToString();
+                    acct = gvMC.Rows[currentMouseOverRow].Cells["ACCT"].Value.ToString();
+                    price = gvMC.Rows[currentMouseOverRow].Cells["PRICE"].Value.ToString();
+                    qty = gvMC.Rows[currentMouseOverRow].Cells["QTY"].Value.ToString();
+                }
+
+
+                mMC.MenuItems.Add(new MenuItem("Delete (Account: " + acct + " )", (o, ev) =>
+                {
+                    string msg = "Account: " + acct;
+                    DialogResult result = MessageBox.Show("Do you want to delete the record for account id [" + msg + "]?",
+                    "Delete record", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (result == DialogResult.Yes)
+                    {
+                        string sql = "DELETE FROM MANUAL_CHARGES WHERE ID =" + id;
+                        bool success = Execute_Sql(sql, CONN_RX);
+                        if (success)
+                            LogActivity("MAN_CHARGE DEL", 0,
+                            acct + "- Q: " + qty.ToString() + ", P: " + price.ToString(), txtMC_Tech.Text);
+                            Utility.WriteActivity("Record for Account:[" + acct + "] deleted");
+                            LoadManualCharges();
+                        return;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }));
+
+                mMC.Show(gvMC, new Point(e.X, e.Y));
+
+            }
+        }
+
+        private void gvCodes_RowHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            int row = e.RowIndex;
+
+            ddBilling_Codes.SelectedValue = gvCodes.Rows[row].Cells["CATEGORY"].Value.ToString();
+            txtBilling_Code.Text = gvCodes.Rows[row].Cells["DESCRIPTION"].Value.ToString();
+            Code_ID = gvCodes.Rows[row].Cells["ID"].Value.ToString();
+
+            btnAddCode.Text = "Update";
+        }
+
+        private void btnAddCode_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtBilling_Code.Text) || string.IsNullOrWhiteSpace(ddBilling_Codes.SelectedValue.ToString()))
+            {
+                MessageBox.Show("You must have a Category and Description", "Missing Item", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            SaveCode();
+            ClearCodes();
+        }
+
+        private void btnClearCode_Click(object sender, EventArgs e)
+        {
+            ClearCodes();
+        }
+
+        private void gvCodes_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                ContextMenu mCode = new ContextMenu();
+                string id = "", desc = "", category = "";
+
+                int currentMouseOverRow = gvCodes.HitTest(e.X, e.Y).RowIndex;
+
+                if (currentMouseOverRow >= 0)
+                {
+                    id = gvCodes.Rows[currentMouseOverRow].Cells["ID"].Value.ToString();
+                    desc = gvCodes.Rows[currentMouseOverRow].Cells["DESCRIPTION"].Value.ToString();
+                    category = gvCodes.Rows[currentMouseOverRow].Cells["CATEGORY"].Value.ToString();
+                }
+
+
+                mCode.MenuItems.Add(new MenuItem("Delete (Category: " + category + ", Description: " + desc + ")", (o, ev) =>
+                {
+                    DialogResult result = MessageBox.Show("Do you want to delete the record for (Category: " + category + ", Description: " + desc + ")?",
+                    "Delete record", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (result == DialogResult.Yes)
+                    {
+                        string sql = "DELETE FROM BILLING_CODES WHERE ID =" + id;
+                        bool success = Execute_Sql(sql, CONN_RX);
+                        if (success)
+                            LoadCodes();
+                        return;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }));
+
+                mCode.Show(gvCodes, new Point(e.X, e.Y));
+
+            }
+        }
+
+        private void btnMC_Import_Click(object sender, EventArgs e)
+        {
+            var folder = "";
+            OpenFileDialog fbd = new OpenFileDialog();
+            fbd.Filter = "Excel Files | *.xls;*.xlsx";
+
+            if (fbd.ShowDialog() == DialogResult.OK)
+            {
+                if (string.IsNullOrEmpty(fbd.FileName.ToString()))
+                {
+                    return;
+                }
+
+                DialogResult result = MessageBox.Show("Do you want to import charges from [" + Path.GetFileNameWithoutExtension(fbd.FileName) + "]",
+                "Import Charges", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if(result == DialogResult.No)
+                {
+                    return;
+                }
+
+                Utility.WriteActivity("Manual Charge exporting from " + folder);
+                readExcelImportCharges(fbd.FileName);
+            }
+
+            
+            //try
+            //{
+            //    var folder = "";
+            //    OpenFileDialog fbd = new OpenFileDialog();
+            //    fbd.Filter = "Excel Files | *.xls;*.xlsx";
+
+            //    if (fbd.ShowDialog() == DialogResult.OK)
+            //    {
+            //        if (string.IsNullOrEmpty(fbd.FileName.ToString()))
+            //        {
+            //            return;
+            //        }
+
+            //        folder = fbd.FileName;
+            //        Utility.WriteActivity("Manual Charge exporting from " + folder);
+            //        ImportManualCharges(folder);
+            //    }
+            //    else
+            //    {
+            //        return;
+            //    }
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show(ex.Message);
+            //}
+            //finally
+            //{
+
+            //}
+        }
+
+        private void btnMC_Export_Click(object sender, EventArgs e)
+        {
+            ExportManualCharges();
+        }
+
+        private void btnMC_RunReport_Click(object sender, EventArgs e)
+        {
+            List<string> param = new List<string>();
+
+            if (txtMC_Scripts.Lines.Length >= 0)
+            {
+                for (int x = 0; x < txtMC_Scripts.Lines.Length; x++)
+                {
+                    param.Add("-A");
+                    param.Add("RX_NUMBER:" + txtMC_Scripts.Lines[x].Trim());
+                }
+            }
+
+            string[] p = param.ToArray();
+
+            var report_date = DateTime.Now.ToString("yyyyMMdd-HHmm");
+            string file = prop.CE_Report;
+            string exp_path = prop.CE_Export;
+            string dsn = prop.DSN_CIPS;
+            string full_export = exp_path + report_date + "_" + Path.GetFileNameWithoutExtension(file) + ".pdf";
+
+            string[] rpt = { "-S", dsn,
+                    "-F", file,
+                    "-O", full_export,
+                    "-E", "pdf"};
+
+            var rpt_data = rpt.Concat(p).ToArray();
+
+            bool success = RunReport(rpt_data);
+
+            if (success)
+            {
+                Utility.WriteActivity("Report exported to " + full_export);
+                txtMC_Scripts.Text = "";
+            }
+                
+        }
+
+        private void btnBulkEdit_Click(object sender, EventArgs e)
+        {
+            DateTime dt = dpMC_Export.Value;
+            int year = dt.Year;
+            int month = dt.Month;
+
+            FRM_GRIDVIEW frm = new FRM_GRIDVIEW();
+            string sql = " WHERE DATEPART(month, [DATE]) = " + month.ToString() + " and DATEPART(year, [DATE]) = " + year.ToString();
+            sql += " AND CATEGORY LIKE '%Local Pharmacy%'";
+            frm.Tag = "SELECT  * FROM MANUAL_CHARGES " + sql;
+            frm.Show();
         }
 
         #endregion --- End Click
@@ -3027,11 +4536,18 @@ namespace OfficeAutomation
         {
             try
             {
-                var bd = (BindingSource)gvFac.DataSource;
-                var dt = (DataTable)bd.DataSource;
-                dt.DefaultView.RowFilter = string.Format("Group_Code like '%{0}%'", txtFacFilter.Text.Trim().Replace("'", "''"));
-                gvFac.Refresh();
-            }
+                if (bsFac.DataSource != null)
+                {
+                    var bd = (BindingSource)gvFac.DataSource;
+                    var dt = (DataTable)bd.DataSource;
+                    dt.DefaultView.RowFilter = string.Format("Group_Code like '%{0}%'", txtFacFilter.Text.Trim().Replace("'", "''"));
+                    gvFac.Refresh();
+                }
+                else
+                {
+                    MessageBox.Show("Use the 'Refresh' button to populate the grid", "Grid Not Loaded");
+                }
+        }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
@@ -3067,10 +4583,18 @@ namespace OfficeAutomation
 
         private void txtStagedFilter_TextChanged(object sender, EventArgs e)
         {
-            BindingSource bs = new BindingSource();
-            bs.DataSource = gvStaged.DataSource;
-            bs.Filter = string.Format("CONVERT(" + gvStaged.Columns[3].DataPropertyName + ", System.String) like '%" + txtStagedFilter.Text.Replace("'", "''") + "%'");
-            gvStaged.DataSource = bs;
+            //if (gvStaged.Rows != null && gvStaged.Rows.Count != 0)
+            if (gvStaged.DataSource != null)
+            {
+                BindingSource bs = new BindingSource();
+                bs.DataSource = gvStaged.DataSource;
+                bs.Filter = string.Format("CONVERT(" + gvStaged.Columns["Code"].DataPropertyName + ", System.String) like '%" + txtStagedFilter.Text.Replace("'", "''") + "%'");
+                gvStaged.DataSource = bs;
+            }
+            else
+            {
+                MessageBox.Show("Use the 'Get for Preview' button to populate the grid", "Grid Not Loaded");
+            }
         }
 
         private void cbBillingDate_CheckedChanged(object sender, EventArgs e)
@@ -3081,10 +4605,18 @@ namespace OfficeAutomation
 
         private void txtSentFilter_TextChanged(object sender, EventArgs e)
         {
-            BindingSource bs = new BindingSource();
-            bs.DataSource = gvBillingSent.DataSource;
-            bs.Filter = string.Format("CONVERT(" + gvBillingSent.Columns[2].DataPropertyName + ", System.String) like '%" + txtSentFilter.Text.Replace("'", "''") + "%'");
-            gvBillingSent.DataSource = bs;
+            //if (gvBillingSent.Rows != null && gvBillingSent.Rows.Count != 0)
+            if (gvBillingSent.DataSource != null)
+            {
+                BindingSource bs = new BindingSource();
+                bs.DataSource = gvBillingSent.DataSource;
+                bs.Filter = string.Format("CONVERT(" + gvBillingSent.Columns[2].DataPropertyName + ", System.String) like '%" + txtSentFilter.Text.Replace("'", "''") + "%'");
+                gvBillingSent.DataSource = bs;
+            }
+            else
+            {
+                MessageBox.Show("Use the 'Refresh' button to populate the grid", "Grid Not Loaded");
+            }
         }
 
         private void txtFilterRpt_TextChanged(object sender, EventArgs e)
@@ -3093,10 +4625,17 @@ namespace OfficeAutomation
 
             try
             {
-                var bd = (BindingSource)gvRpt.DataSource;
-                var dt = (DataTable)bd.DataSource;
-                dt.DefaultView.RowFilter = string.Format(search + " like '%{0}%'", txtFilterRpt.Text.Trim().Replace("'", "''"));
-                gvRpt.Refresh();
+                if (bsRpt.DataSource != null)
+                {
+                    var bd = (BindingSource)gvRpt.DataSource;
+                    var dt = (DataTable)bd.DataSource;
+                    dt.DefaultView.RowFilter = string.Format(search + " like '%{0}%'", txtFilterRpt.Text.Trim().Replace("'", "''"));
+                    gvRpt.Refresh();
+                }
+                else
+                {
+                    MessageBox.Show("Use the 'Refresh' button to populate the grid", "Grid Not Loaded");
+                }
             }
             catch (Exception ex)
             {
@@ -3119,9 +4658,219 @@ namespace OfficeAutomation
 
         }
 
+        private void ddStates_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ddAccStates.SelectedItem != null && DataSet)
+            {
+                try
+                {
+                    string state = ddAccStates.SelectedValue.ToString();
+                    if (state != null)
+                    {
+                        //Utility.WriteActivity(state);
+                    }
+                }
+                catch
+                {
+                    return;
+                }
+            }
+        }
+
+        private void txtAccFilter_TextChanged(object sender, EventArgs e)
+        {
+            //if(gvAccList.Rows != null && gvAccList.Rows.Count != 0)
+            if (bsAcc.DataSource != null)
+            {
+                BindingSource bs = new BindingSource();
+                bs.DataSource = gvAccList.DataSource;
+                bs.Filter = string.Format("CONVERT(" + gvAccList.Columns["AccountName"].DataPropertyName + ", System.String) like '%" + txtAccFilter.Text.Replace("'", "''") + "%'");
+                gvAccList.DataSource = bs;
+            }
+            else
+            {
+                MessageBox.Show("Use the 'Refresh/Load Accounts' button to populate the grid","Grid Not Loaded");
+            }
+
+        }
+
+        private void ddMC_Account_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string id = "";
+
+            lbMC_AccName.Text = "";
+            id = ddMC_Account.SelectedValue.ToString().Trim();
+
+            if (!String.IsNullOrEmpty(id))
+            {
+                Utility.WriteActivity(id);
+                string sql = @"SELECT 
+                            AccountName, GroupCode
+                            FROM ACCOUNT_LIST
+                            WHERE ID = @dcode"; 
+                using (SqlConnection conn = new SqlConnection(CONN_RX))
+                {
+                    SqlCommand command = new SqlCommand(sql, conn);
+                    command.Parameters.AddWithValue("@dcode",id);
+
+                    try
+                    {
+                        conn.Open();
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            lbMC_AccCode.Text = reader["GroupCode"].ToString();
+                            lbMC_AccName.Text = reader["AccountName"].ToString();
+                        }
+                        reader.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                    finally
+                    {
+                    }
+
+                }
+            }
+        }
+
+        private void txtMC_Filter_TextChanged(object sender, EventArgs e)
+        {
+            //if (gvMC.Rows != null && gvMC.Rows.Count != 0)
+            if (bsMC.DataSource != null)
+            {
+                BindingSource bs = new BindingSource();
+                bs.DataSource = gvMC.DataSource;
+                bs.Filter = string.Format("CONVERT(" + gvMC.Columns["ACCT"].DataPropertyName + ", System.String) like '%" + txtMC_Filter.Text.Replace("'", "''") + "%'");
+                gvMC.DataSource = bs;
+            }
+            else
+            {
+                MessageBox.Show("Use the 'Refresh' button to populate the grid", "Grid Not Loaded");
+            }
+        }
+
+        private void ddBilling_Codes_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //if (gvCodes.Rows.Count > 0)
+            //{
+            //    BindingSource bs = new BindingSource();
+            //    bs.DataSource = gvCodes.DataSource;
+            //    bs.Filter = string.Format("CONVERT(" + gvCodes.Columns["CATEGORY"].DataPropertyName + ", System.String) like '%" + ddBilling_Codes.SelectedValue.ToString().Replace("'", "''") + "%'");
+            //    gvCodes.DataSource = bs;
+            //    gvCodes.Refresh();
+            //}
+        }
+
+        private void txtFilterCode_TextChanged(object sender, EventArgs e)
+        {
+            if (bsCodes.DataSource != null)
+            {
+                BindingSource bs = new BindingSource();
+                bs.DataSource = gvCodes.DataSource;
+                bs.Filter = string.Format("CONVERT(" + gvCodes.Columns["DESCRIPTION"].DataPropertyName + ", System.String) like '%" + txtFilterCode.Text.Replace("'", "''") + "%'");
+                gvCodes.DataSource = bs;
+                gvCodes.Refresh();
+            }
+            else
+            {
+                MessageBox.Show("Use the 'Refresh' button to populate the grid", "Grid Not Loaded");
+            }
+        }
 
 
-        #endregion
+        #endregion  --END Change Events
+
+        #region Printing
+        private void pdInvoice_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
+        {
+            var mFont = new Font("Arial", 12, FontStyle.Regular);
+            var mFBold = new Font("Arial", 12, FontStyle.Bold);
+            var bBrush = Brushes.Black;
+            var logo = Image.FromFile(Application.StartupPath + @"\images\ihs-pharmacy-logo.png");
+            var code = lbMC_AccCode.Text;
+            var name = lbMC_AccName.Text;
+            var date = dpMC_Date.Value.ToString("MM/dd/yyyy");
+            var qty = txtMC_Qty.Text;
+            if (qty.Length > 3 && qty.Substring(qty.Length - 3) == ".00")
+            {
+                qty = qty.Replace(".00", "");
+            }
+            var price = txtMC_Price.Text;
+            var desc = txtMC_Desc.Text;
+            e.Graphics.DrawString("IHS PHARMACY", mFont, bBrush, new Point(25, 60));
+            e.Graphics.DrawString("504 MCCURDY AVE S., STE 7", mFont, bBrush, new Point(25, 84));
+            e.Graphics.DrawString("RAINSVILLE, AL 35986", mFont, bBrush, new Point(25, 108));
+            e.Graphics.DrawString("256-638-1060", mFont, bBrush, new Point(25, 132));
+
+            e.Graphics.DrawImage(logo, new Point(560, 60));
+
+            e.Graphics.DrawString(code, mFBold, bBrush, new Point(80, 180));
+            e.Graphics.DrawString(name, mFBold, bBrush, new Point(160, 180));
+            e.Graphics.DrawString(date, mFont, bBrush, new Point(600, 180));
+
+            e.Graphics.DrawString(name, mFont, bBrush, new Point(25, 240));
+            e.Graphics.DrawString(desc, mFont, bBrush, new Point(340, 240));
+
+            e.Graphics.DrawString("Qty", mFBold, bBrush, new Point(25, 280));
+            e.Graphics.DrawString("Price", mFBold, bBrush, new Point(160, 280));
+            e.Graphics.DrawString(qty, mFont, bBrush, new Point(25, 310));
+            e.Graphics.DrawString(price, mFont, bBrush, new Point(160, 310));
+
+        }
+
+        private void btnPrintInv_Click(object sender, EventArgs e)
+        {
+            decimal q, p;
+
+            if (ddMC_Account.SelectedValue.ToString().Trim() == "")
+            {
+                MessageBox.Show("An Account ID is required", "Missing Account");
+                return;
+            }
+
+            if (txtMC_Desc.Text.Trim() == "" || ddMC_Category.SelectedValue.ToString().Trim() == "")
+            {
+                MessageBox.Show("A Descrition and Category are required", "Missing Item");
+                return;
+            }
+
+            if (decimal.TryParse(txtMC_Qty.Text, out q))
+            {
+                //valid
+            }
+            else
+            {
+                MessageBox.Show("Please enter a valid number for the Quantity", "Invalid Number");
+                return;
+            }
+
+            if (decimal.TryParse(txtMC_Price.Text, out p))
+            {
+                //valid
+            }
+            else
+            {
+                MessageBox.Show("Please enter a valid number for the Price", "Invalid Number");
+                return;
+            }
+
+            bool insert = false;
+
+            if (btnMC_Update.Text == "Save")
+                insert = true;
+
+            ppDialog.Document = pdInvoice;
+            ppDialog.ShowDialog();
+
+            UpdateManualCharges(insert, q, p);
+        }
+
+
+        #endregion  --END Printing
+
 
     }
 }

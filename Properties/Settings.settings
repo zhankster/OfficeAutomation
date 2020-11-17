@@ -21,7 +21,7 @@
       <Value Profile="(Default)">outlook.office365.com</Value>
     </Setting>
     <Setting Name="Mailbox" Type="System.String" Scope="User">
-      <Value Profile="(Default)">IHS</Value>
+      <Value Profile="(Default)">statements</Value>
     </Setting>
     <Setting Name="DSN_CIPS" Type="System.String" Scope="User">
       <Value Profile="(Default)">cips9</Value>
@@ -45,10 +45,10 @@
       <Value Profile="(Default)">keilad@ihspharmacy.com</Value>
     </Setting>
     <Setting Name="BillingRptFolder" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\Notifications\Billing\</Value>
+      <Value Profile="(Default)">Z:\STATEMENTS\Dana\MonthlyBillingReports\</Value>
     </Setting>
     <Setting Name="BillingExports" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\Notifications\Exports\</Value>
+      <Value Profile="(Default)">L:\Billing\Facility Files\</Value>
     </Setting>
     <Setting Name="download" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:\Files\download\</Value>
@@ -75,16 +75,16 @@
       <Value Profile="(Default)">C:\Notifications\Exports\</Value>
     </Setting>
     <Setting Name="NotifyReport" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\Notifications\Reports\FN.rpt</Value>
+      <Value Profile="(Default)">L:\IHS Documents\TECH SPECIAL INFO\ARX Folder\NEW ARX_LD.rpt</Value>
     </Setting>
     <Setting Name="AddressAttachment" Type="System.String" Scope="User">
-      <Value Profile="(Default)">zrefugee@gmail.com</Value>
+      <Value Profile="(Default)">gsparks@ihspharmacy.com</Value>
     </Setting>
     <Setting Name="PasswordAttachment" Type="System.String" Scope="User">
       <Value Profile="(Default)">OuadmfoyL8VvCpWcxbgZ9w==</Value>
     </Setting>
     <Setting Name="DSN_WS" Type="System.String" Scope="User">
-      <Value Profile="(Default)">CIPS_WS</Value>
+      <Value Profile="(Default)">wholesale</Value>
     </Setting>
     <Setting Name="WS_ID" Type="System.String" Scope="User">
       <Value Profile="(Default)">ZWS</Value>
@@ -104,7 +104,13 @@ We currently plan on sending the July Billing on Monday, if all goes well.</Valu
       <Value Profile="(Default)">Issue with previous Billing Report sent</Value>
     </Setting>
     <Setting Name="update" Type="System.String" Scope="User">
-      <Value Profile="(Default)">\\IHSSQL1\Application Setups\IHS Office Automation\update\</Value>
+      <Value Profile="(Default)">\\IHSSQL1\OAUpdate\update\</Value>
+    </Setting>
+    <Setting Name="CE_Report" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\\IHSSQL1\CIPS Reports\STATEMENTS\CTR.rpt</Value>
+    </Setting>
+    <Setting Name="CE_Export" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Users\Public\Desktop\</Value>
     </Setting>
   </Settings>
 </SettingsFile>

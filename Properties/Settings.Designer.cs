@@ -12,7 +12,7 @@ namespace OfficeAutomation.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.6.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.7.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -97,7 +97,7 @@ namespace OfficeAutomation.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("IHS")]
+        [global::System.Configuration.DefaultSettingValueAttribute("statements")]
         public string Mailbox {
             get {
                 return ((string)(this["Mailbox"]));
@@ -193,7 +193,7 @@ namespace OfficeAutomation.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Notifications\\Billing\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Z:\\STATEMENTS\\Dana\\MonthlyBillingReports\\")]
         public string BillingRptFolder {
             get {
                 return ((string)(this["BillingRptFolder"]));
@@ -205,7 +205,7 @@ namespace OfficeAutomation.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Notifications\\Exports\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("L:\\Billing\\Facility Files\\")]
         public string BillingExports {
             get {
                 return ((string)(this["BillingExports"]));
@@ -313,7 +313,7 @@ namespace OfficeAutomation.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Notifications\\Reports\\FN.rpt")]
+        [global::System.Configuration.DefaultSettingValueAttribute("L:\\IHS Documents\\TECH SPECIAL INFO\\ARX Folder\\NEW ARX_LD.rpt")]
         public string NotifyReport {
             get {
                 return ((string)(this["NotifyReport"]));
@@ -325,7 +325,7 @@ namespace OfficeAutomation.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("zrefugee@gmail.com")]
+        [global::System.Configuration.DefaultSettingValueAttribute("gsparks@ihspharmacy.com")]
         public string AddressAttachment {
             get {
                 return ((string)(this["AddressAttachment"]));
@@ -349,7 +349,7 @@ namespace OfficeAutomation.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("CIPS_WS")]
+        [global::System.Configuration.DefaultSettingValueAttribute("wholesale")]
         public string DSN_WS {
             get {
                 return ((string)(this["DSN_WS"]));
@@ -423,13 +423,37 @@ namespace OfficeAutomation.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\\\\IHSSQL1\\Application Setups\\IHS Office Automation\\update\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("\\\\IHSSQL1\\OAUpdate\\update\\")]
         public string update {
             get {
                 return ((string)(this["update"]));
             }
             set {
                 this["update"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("\\\\IHSSQL1\\CIPS Reports\\STATEMENTS\\CTR.rpt")]
+        public string CE_Report {
+            get {
+                return ((string)(this["CE_Report"]));
+            }
+            set {
+                this["CE_Report"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Public\\Desktop\\")]
+        public string CE_Export {
+            get {
+                return ((string)(this["CE_Export"]));
+            }
+            set {
+                this["CE_Export"] = value;
             }
         }
     }

@@ -40,7 +40,8 @@ namespace AutoUpdate
         }
         static void Main(string[] args)
         {
-            string update_folder = @"\\192.168.50.202\dev\update";
+            string update_folder = @"\\IHSSQL1\OAUpdate\update";
+            //  \\IHSSQL1\OAUpdate\update\
             if (args == null)
             {
                 Console.WriteLine("args is null"); // Check for null array
